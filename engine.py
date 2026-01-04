@@ -5,14 +5,12 @@ Copyright 2026. Andrew Wang.
 """
 import logging
 import re
-from os import cpu_count
 from collections import Counter
 from enum import Enum
 from itertools import product
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from concurrent.futures import ProcessPoolExecutor, as_completed
 
 logger = logging.getLogger(__name__)
 
@@ -47,15 +45,11 @@ class WordleEngine:
         self._words = words
         self._chars = chars
         self._df = pd.DataFrame(data=chars, index=words)
+        self._patterns = None
         logger.info(
             'Initialized engine with %d words of length %d',
             words.shape[0],
             word_len)
-        
-    def _compute_pattern(self, tup):
-        """Closure to send to multiprocessign pool."""
-        (idl, lhs), (idr, rhs) = tup
-        self._patterns[idl, idr, :] = self.wordle_compare(lhs, rhs)
 
     def compile_patterns(self):
         """Compile and cache pattern combinations for every pairing."""
@@ -64,13 +58,11 @@ class WordleEngine:
              self._num_words,
              self._word_len),
             dtype=int)
-
-        
         nested_for = product(enumerate(self._chars), repeat=2)
-        for (idl, lhs), (idr, rhs) in nested_for:
+        for (idl, lhs), (idr, rhs) in tqdm(
+                nested_for, total=self._num_words**2):
             squares = self.wordle_compare(lhs, rhs)
             self._patterns[idl, idr, :] = squares
-
         np.save('patterns.npy', self._patterns)
 
     def wordle_compare(
@@ -80,7 +72,7 @@ class WordleEngine:
         """Given a guess and an answer, generate the squares."""
         assert guess.ndim == answer.ndim == 1
         assert guess.shape == answer.shape
-        squares = np.full_like(guess, Square.BLACK.value)
+        squares = np.full_like(guess, Square.BLACK.value, dtype=int)
 
         # Green is the easiest case to handle by position.
         # The mask gm is used to remove them in further processing.
@@ -91,14 +83,16 @@ class WordleEngine:
         # a non-green spot occurs in expected. From there, we color
         # the first (up to) n occurences of the letter yellow in guess.
         for cand in np.unique(guess[not_green]):
+            # For every distinct character in guess not in a green spot,
+            # get the number of times it appears in a non green answer spot.
             cand_count = np.count_nonzero(answer[not_green] == cand)
-            for i in range(guess.shape[0]):
-                if cand_count == 0:
-                    break
-                if squares[i] == Square.GREEN.value or guess[i] != cand:
-                    continue
-                squares[i] = Square.YELLOW.value
-                cand_count -= 1
+            # Mask for where this character appears in guess.
+            matching_spots = guess == cand
+            # Get the indicies where both not green and guess matches
+            # character.
+            possible_idx = np.where(not_green & matching_spots)[0]
+            # Make all of those indices up to cand_count yellow.
+            squares[possible_idx[:cand_count]] = Square.YELLOW.value
         return squares
 
     def is_match(
