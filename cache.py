@@ -5,7 +5,6 @@ Precompute square responses for all pairings.
 Copyright 2026. Andrew Wang.
 """
 import logging
-from collections import Counter
 import numpy as np
 from tqdm import tqdm
 from constants import Square
@@ -79,41 +78,3 @@ def load_patterns() -> np.ndarray:
     """Load already compiled patterns (n, n) from archive."""
     logger.info('Loading pre-compiled patterns from %s', _PATTERN_CACHE_FILE)
     return np.load(_PATTERN_CACHE_FILE)['arr_0']
-
-
-# TODO: look to replace this function with pattern check.
-
-
-def _is_match(guess: np.ndarray, candidate: np.ndarray, squares: np.ndarray):
-    """
-    Given a guess and response squares, decide if candidate matches.
-
-    This function serves as validation for the pattern grid.
-    """
-    assert guess.ndim == candidate.ndim == squares.ndim == 1
-    assert guess.shape == candidate.shape == squares.shape
-
-    # Validate that all green square positions match.
-    gm = squares == Square.GREEN.value
-    if np.any(guess[gm] != candidate[gm]):
-        return False
-
-    # 1. The yellow masking must not create matches positionally.
-    # 2. Assuming (1) is checked, the yellow guess letters are a
-    # multi-subset of the non-green candidate letters.
-    ym = squares == Square.YELLOW.value
-    if np.any(guess[ym] == candidate[ym]):
-        return False
-    # pylint: disable-next=unnecessary-negation
-    if not Counter(guess[ym]) <= Counter(candidate[~gm]):
-        return False
-
-    # 1. The black masking must not create matches positionally.
-    # 2. The black guess letters that do not appear in yellow positions
-    # must not be contained in the non-green candidate letters.
-    bm = squares == Square.BLACK.value
-    if np.any(guess[bm] == candidate[bm]):
-        return False
-    non_yellow_blacks = set(guess[bm]) - set(guess[ym])
-    candidate_non_greens = set(candidate[~gm])
-    return not non_yellow_blacks.intersection(candidate_non_greens)
