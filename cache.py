@@ -23,12 +23,14 @@ _PATTERN_CACHE_FILE = 'resources/patterns.npy'
 def load_words() -> np.ndarray:
     """Load the dictionary array (n,) from words list."""
     words = np.loadtxt(_DICTIONARY_FILE, dtype=str)
-    logger.info('Loaded %d words from %s', len(words), _DICTIONARY_FILE)
     len_vec = np.vectorize(len, otypes=[int])
     unique_lens = np.unique(len_vec(words))
-    assert unique_lens.shape == (1,), \
+    assert unique_lens.size == 1, \
         'Words in dictionary must have uniform length'
-    logger.info('Validated all words have length %d', unique_lens[0])
+    assert np.unique(
+        words).size == words.size, 'Words in dictionary must be unique'
+    logger.info('Loaded %d words of length %d from %s',
+                words.size, unique_lens[0], _DICTIONARY_FILE)
     return words
 
 
@@ -39,11 +41,10 @@ def compile_patterns():
     Save the output patterns to a compressed numpy archive.
     """
     words = load_words()
-    num_words = len(words)
     logger.info('Cross compiling %d patterns for %d words',
-                num_words**2, num_words)
+                words.size**2, words.size)
     cmp_pat = np.vectorize(wordle_compare, otypes=[str])
-    with tqdm(total=num_words**2) as pbar:
+    with tqdm(total=words.size**2) as pbar:
         # Matrix multiply vectorization magic.
         patterns: np.ndarray = cmp_pat(words[:, np.newaxis], words, pbar)
     logger.info('Writing patterns to cache %s', _PATTERN_CACHE_FILE)
@@ -66,7 +67,7 @@ def load_patterns() -> np.ndarray:
             'Missing saved archive partitions. Run compile_patterns.'
         chunk_files.sort()
 
-        logger.info('Joining %d binary chunks from %s',
+        logger.info('Joining %d binary partitions from %s',
                     len(chunk_files), _CHUNK_DIR)
         with open(_PATTERN_ARCHIVE_FILE, 'wb') as fdst:
             for chunk in chunk_files:
