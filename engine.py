@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 class Square(Enum):
     """Define square colors and their unicode representations."""
 
-    BLACK = ord('\U00002B1B')
-    YELLOW = ord('\U0001F7E8')
-    GREEN = ord('\U0001F7E9')
+    BLACK = 0 # '\U00002B1B'
+    YELLOW = 1 # '\U0001F7E8'
+    GREEN = 2 # '\U0001F7E9'
 
 
 class WordleEngine:
@@ -57,7 +57,7 @@ class WordleEngine:
             (self._num_words,
              self._num_words,
              self._word_len),
-            dtype=int)
+            dtype=np.uint8)
         nested_for = product(enumerate(self._chars), repeat=2)
         for (idl, lhs), (idr, rhs) in tqdm(
                 nested_for, total=self._num_words**2):
@@ -72,7 +72,7 @@ class WordleEngine:
         """Given a guess and an answer, generate the squares."""
         assert guess.ndim == answer.ndim == 1
         assert guess.shape == answer.shape
-        squares = np.full_like(guess, Square.BLACK.value, dtype=int)
+        squares = np.full_like(guess, Square.BLACK.value, dtype=np.uint8)
 
         # Green is the easiest case to handle by position.
         # The mask gm is used to remove them in further processing.
@@ -94,6 +94,19 @@ class WordleEngine:
             # Make all of those indices up to cand_count yellow.
             squares[possible_idx[:cand_count]] = Square.YELLOW.value
         return squares
+    
+    def render(self, squares: np.ndarray) -> str:
+        """Render squares as a colored series of blocks."""
+        blocks = np.empty_like(squares, dtype='<U1')
+        for idx, square in enumerate(squares):
+            assert square in (0, 1, 2)
+            if square == 0:
+                blocks[idx] = '\U00002B1B'
+            elif square == 1:
+                blocks[idx] = '\U0001F7E8'
+            else:
+                blocks[idx] = '\U0001F7E9'
+        return ''.join(blocks)
 
     def is_match(
             self,
