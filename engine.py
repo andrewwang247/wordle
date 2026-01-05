@@ -3,17 +3,10 @@ Wordle game operations engine.
 
 Copyright 2026. Andrew Wang.
 """
-from os import path
-import logging
 import re
 import numpy as np
 import pandas as pd
-from constants import SQUARE_ENCODING
-
-logger = logging.getLogger(__name__)
-
-
-_PATTERNS_NPZ = 'patterns.npz'
+from cache import load_patterns
 
 
 class WordleEngine:
@@ -38,19 +31,8 @@ class WordleEngine:
         # self._words = words
         self._chars = chars
         self._df = pd.DataFrame(data=chars, index=words)
-        if path.exists(_PATTERNS_NPZ):
-            logger.info('Loading pre-compiled patterns from %s', _PATTERNS_NPZ)
-            self._patterns = SQUARE_ENCODING[np.load(_PATTERNS_NPZ)['arr_0']]
-        else:
-            logger.warning(
-                'Did not find pre-compiled patterns - required for entropy features')
-            logger.info(
-                'Run "cat resources/* > patterns.npz" to make patterns available')
-            self._patterns = None
-        logger.info(
-            'Initialized engine with %d words of length %d',
-            words.shape[0],
-            word_len)
+
+        self._patterns = load_patterns()
 
     def lookup_pattern(self, guess: str, expected: str) -> np.ndarray:
         """Render squares as a colored series of blocks."""
