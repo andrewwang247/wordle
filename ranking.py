@@ -15,6 +15,8 @@ from wordfreq import zipf_frequency
 
 logger = logging.getLogger(__name__)
 
+_DEFAULT_LANGUAGE = 'en'
+
 
 def _unroll_counts(row: np.ndarray):
     """Convert a row into unique counts with zero padding."""
@@ -28,7 +30,8 @@ def _unroll_counts(row: np.ndarray):
 class Ranking:
     """Stateful ranking that iteratively updates on new data."""
 
-    def __init__(self, words: np.ndarray, patterns: np.ndarray):
+    def __init__(self, words: np.ndarray, patterns: np.ndarray,
+                 lang: str = _DEFAULT_LANGUAGE):
         """Construct with references to immutable data."""
         self.words = words  # (n,)
         # Fast way to index given a word.
@@ -37,24 +40,22 @@ class Ranking:
         # Use masking to keep track of viable solutions
         self.reachable = np.ones_like(words, dtype=bool)
         self.log_freq = np.vectorize(partial(
-            zipf_frequency, lang='en'), otypes=[float])
-        self._log_state()
+            zipf_frequency, lang=lang), otypes=[float])
 
-    def _log_state(self):
+    def remaining_state(self) -> Tuple[int, float]:
         """Compute the internal entropy of the reachable space."""
-        total_reachable = np.sum(self.reachable)
+        total_reachable: int = np.sum(self.reachable)
         logger.info('Possibilities: %d', total_reachable)
-        space_bits = 0 if total_reachable == 0 else log2(total_reachable)
+        space_bits = 0. if total_reachable == 0 else log2(total_reachable)
         logger.info('Entropy: %.2f', space_bits)
+        return total_reachable, space_bits
 
     def update(self, guess: str, squares: str):
         """Update internal state with guess and squares result."""
-        logger.info('Guessed %s with result %s', guess, squares)
         assert guess in self.index, f'Guess {guess} is not in dictionary.'
         idx = self.index.get_loc(guess)
         squares_non_match = self.patterns[idx, :] != squares
         self.reachable[squares_non_match] = False
-        self._log_state()
 
     def likely_solutions(self) -> Tuple[np.ndarray, np.ndarray]:
         """Rank the most likely solutions based on word frequency."""
