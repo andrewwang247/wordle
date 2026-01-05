@@ -1,24 +1,30 @@
 """
-Pre-compile and cache wordle comparisons, forming a pattern grid.
+Loading and caching data for words and patterns.
+Precompute square responses for all pairings.
 
 Copyright 2026. Andrew Wang.
 """
-from collections import Counter
 import logging
+from collections import Counter
 import numpy as np
 from tqdm import tqdm
 from constants import Square
 
 logger = logging.getLogger(__name__)
 
+_DICTIONARY_FILE = 'words.txt'
 _PATTERN_CACHE_FILE = 'patterns.npz'
 
 
+def load_words() -> np.ndarray:
+    """Load the dictionary array (n,) from words list."""
+    words = np.loadtxt(_DICTIONARY_FILE, dtype=str)
+    logger.info('Loaded %d words from %s', len(words), _DICTIONARY_FILE)
+    return words
+
+
 @np.vectorize
-def _wordle_compare(
-        guess: str,
-        answer: str,
-        pbar: tqdm) -> str:
+def _wordle_compare(guess: str, answer: str, pbar: tqdm) -> str:
     """
     Given a guess and an answer, generate the squares pattern.
 
@@ -51,17 +57,18 @@ def _wordle_compare(
     return ''.join(squares)
 
 
-def compile_patterns(words: np.ndarray):
+def compile_patterns():
     """
     Compile and cache pattern combinations for every pairing.
 
     Save the output patterns to a compressed numpy archive.
     """
-    assert words.ndim == 1
+    words = load_words()
     num_words = len(words)
     logger.info('Cross compiling %d patterns for %d words',
                 num_words**2, num_words)
     with tqdm(total=num_words**2) as pbar:
+        # Matrix multiply vectorization magic.
         patterns: np.ndarray = _wordle_compare(
             words[:, np.newaxis], words, pbar)
     logger.info('Writing patterns to %s', _PATTERN_CACHE_FILE)
@@ -69,12 +76,12 @@ def compile_patterns(words: np.ndarray):
 
 
 def load_patterns() -> np.ndarray:
-    """Load already compiled patterns."""
+    """Load already compiled patterns (n, n) from archive."""
     logger.info('Loading pre-compiled patterns from %s', _PATTERN_CACHE_FILE)
     return np.load(_PATTERN_CACHE_FILE)['arr_0']
 
 
-# TODO: look to get replace this function with pattern check.
+# TODO: look to replace this function with pattern check.
 
 
 def _is_match(guess: np.ndarray, candidate: np.ndarray, squares: np.ndarray):
