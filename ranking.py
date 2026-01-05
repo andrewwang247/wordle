@@ -20,7 +20,7 @@ def _unroll_counts(row: np.ndarray):
     """Convert a row into unique counts with zero padding."""
     unique_counts = np.array(list(Counter(row).values()), dtype=int)
     # Pad all to same length so we can apply along axis.
-    amount_short = len(row) - len(unique_counts)
+    amount_short = row.size - unique_counts.size
     padding = np.zeros(amount_short, dtype=int)
     return np.concatenate([unique_counts, padding])
 
@@ -50,6 +50,7 @@ class Ranking:
     def update(self, guess: str, squares: str):
         """Update internal state with guess and squares result."""
         logger.info('Guessed %s with result %s', guess, squares)
+        assert guess in self.index, f'Guess {guess} is not in dictionary.'
         idx = self.index.get_loc(guess)
         squares_non_match = self.patterns[idx, :] != squares
         self.reachable[squares_non_match] = False

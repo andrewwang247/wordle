@@ -16,6 +16,7 @@ class Square(Enum):
     YELLOW = '\U0001F7E8'
     GREEN = '\U0001F7E9'
 
+
 def convert_squares(user_str: str) -> str:
     """Convert convenience string of b, y, and g into squares."""
     assert all(letter in ('b', 'y', 'g') for letter in user_str)
@@ -29,6 +30,7 @@ def convert_squares(user_str: str) -> str:
         else:
             values.append(Square.GREEN.value)
     return ''.join(values)
+
 
 def wordle_compare(guess: str, answer: str, pbar: Optional[tqdm]) -> str:
     """
