@@ -29,7 +29,7 @@ class Ranking:
     """Stateful ranking that iteratively updates on new data."""
 
     def __init__(self, words: np.ndarray, patterns: np.ndarray):
-        """Constructor with references to immutable data."""
+        """Construct with references to immutable data."""
         self.words = words  # (n,)
         # Fast way to index given a word.
         self.index = pd.Index(words)
