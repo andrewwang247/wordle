@@ -10,6 +10,11 @@ venv3/
 .pytest_cache
 .mypy_cache
 
+# Numpy
+# Saved files too large for Github
+*.npz
+*.npy
+
 # JavaScript
 bundle.js
 *node_modules*
