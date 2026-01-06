@@ -6,11 +6,14 @@ Precompute square responses for all pairings.
 Copyright 2026. Andrew Wang.
 """
 import logging
+from typing import Tuple
 from os import listdir, path
 from shutil import copyfileobj
 import numpy as np
 from tqdm import tqdm
 from constants import wordle_compare
+from engine import Engine
+from game import Game
 
 logger = logging.getLogger(__name__)
 
@@ -80,3 +83,12 @@ def load_patterns() -> np.ndarray:
     logger.debug('Writing patterns to cache %s', _PATTERN_CACHE_FILE)
     np.save(_PATTERN_CACHE_FILE, patterns)
     return patterns
+
+
+def initialize_resources() -> Tuple[Game, Engine]:
+    """Initialize a game and engine with words and patterns."""
+    words = load_words()
+    patterns = load_patterns()
+    game = Game(words, patterns)
+    engine = Engine(words, patterns)
+    return game, engine
