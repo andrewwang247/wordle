@@ -12,11 +12,9 @@ import numpy as np
 import pandas as pd
 from scipy.stats import entropy
 from wordfreq import zipf_frequency
+from constants import DEFAULT_LANGUAGE
 
 logger = logging.getLogger(__name__)
-
-BEST_FIRST_GUESS = 'tares'
-_DEFAULT_LANGUAGE = 'en'
 
 
 def _unroll_counts(row: np.ndarray):
@@ -31,8 +29,7 @@ def _unroll_counts(row: np.ndarray):
 class Ranker:
     """Stateful ranking that iteratively updates on new data."""
 
-    def __init__(self, words: np.ndarray, patterns: np.ndarray,
-                 lang: str = _DEFAULT_LANGUAGE):
+    def __init__(self, words: np.ndarray, patterns: np.ndarray):
         """Construct with references to immutable data."""
         self.words = words  # (n,)
         # Fast way to index given a word.
@@ -41,7 +38,7 @@ class Ranker:
         # Use masking to keep track of viable solutions
         self.reachable = np.ones_like(words, dtype=bool)
         self.log_freq = np.vectorize(partial(
-            zipf_frequency, lang=lang), otypes=[float])
+            zipf_frequency, lang=DEFAULT_LANGUAGE), otypes=[float])
 
     def remaining_state(self) -> Tuple[int, float]:
         """Compute the internal entropy of the reachable space."""
