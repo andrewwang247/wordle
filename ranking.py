@@ -27,7 +27,7 @@ def _unroll_counts(row: np.ndarray):
     return np.concatenate([unique_counts, padding])
 
 
-class Ranking:
+class Ranker:
     """Stateful ranking that iteratively updates on new data."""
 
     def __init__(self, words: np.ndarray, patterns: np.ndarray,
@@ -44,11 +44,15 @@ class Ranking:
 
     def remaining_state(self) -> Tuple[int, float]:
         """Compute the internal entropy of the reachable space."""
-        total_reachable: int = np.sum(self.reachable)
+        total_reachable = self.still_reachable()
         logger.info('Possibilities: %d', total_reachable)
         space_bits = 0. if total_reachable == 0 else log2(total_reachable)
         logger.info('Entropy: %.2f', space_bits)
         return total_reachable, space_bits
+
+    def still_reachable(self) -> int:
+        """Get the number of reachable words that remain."""
+        return np.sum(self.reachable)
 
     def update(self, guess: str, squares: str):
         """Update internal state with guess and squares result."""
@@ -72,3 +76,7 @@ class Ranking:
         entropies: np.ndarray = entropy(counts, axis=1, base=2)  # type: ignore
         sorted_idx = np.argsort(entropies)[::-1]
         return self.words[sorted_idx], entropies[sorted_idx]
+
+    def reset(self):
+        """Reset the internal state to a clean slate."""
+        self.reachable = np.ones_like(self.words, dtype=bool)
