@@ -45,25 +45,27 @@ class Ranker:
 
     def remaining_state(self) -> Tuple[int, float]:
         """Compute the internal entropy of the reachable space."""
-        total_reachable = self.still_reachable()
+        total_reachable = np.sum(self.reachable)
         logger.info('Remaining possiblities: %d', total_reachable)
         space_bits = 0. if total_reachable == 0 else log2(total_reachable)
         logger.info('Remaining entropy: %.2f', space_bits)
         return total_reachable, space_bits
 
-    def still_reachable(self) -> int:
-        """Get the number of reachable words that remain."""
-        return np.sum(self.reachable)
+    def still_reachable(self) -> np.ndarray:
+        """Get the remaining reachable words that remain."""
+        return self.words[self.reachable]
 
     def update(self, guess: str, squares: str):
         """Update internal state with guess and squares result."""
         assert guess in self.index, f'{guess} is not in dictionary.'
+        logger.debug('Updating internal state with new information')
         idx = self.index.get_loc(guess)
         squares_non_match = self.patterns[idx, :] != squares
         self.reachable[squares_non_match] = False
 
     def likely_solutions(self) -> Tuple[np.ndarray, np.ndarray]:
         """Rank the most likely solutions based on word frequency."""
+        logger.debug('Sorting likely solutions by log likelihood')
         possible = self.words[self.reachable]
         frequencies = self.log_freq(possible)
         sorted_idx = np.argsort(frequencies)[::-1]
@@ -72,6 +74,7 @@ class Ranker:
     def informative_guesses(self) -> Tuple[np.ndarray, np.ndarray]:
         """Rank the probabilistic quality of guesses by entropy (in bits)."""
         # All guesses (axis 0) are included. Exclude unreachable candidates.
+        logger.debug('Sorting informative guesses by entropy')
         working_set = self.patterns[:, self.reachable]
         counts = np.apply_along_axis(_unroll_counts, 1, working_set)
         entropies: np.ndarray = entropy(counts, axis=1, base=2)  # type: ignore
@@ -80,4 +83,5 @@ class Ranker:
 
     def reset(self):
         """Reset the internal state to a clean slate."""
+        logger.debug('Resetting ranker state')
         self.reachable = np.ones_like(self.words, dtype=bool)

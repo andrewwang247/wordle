@@ -7,11 +7,11 @@ import logging
 from typing import List
 import numpy as np
 import pandas as pd
+from constants import BEST_FIRST_GUESS
 from game import Game
 from ranking import Ranker
 
 logger = logging.getLogger(__name__)
-BEST_FIRST_GUESS = 'tares'
 
 
 class Engine:
@@ -29,12 +29,12 @@ class Engine:
         self.entropy_hist: List[float] = [entropy]
 
     def make_guess(self, turn: int) -> str:
-        """Return the optimal next guess."""
+        """Decide on the optimal next guess."""
         if self.cache_first_guess and turn == 0:
             logger.debug('Using cached first guess %s', BEST_FIRST_GUESS)
             return BEST_FIRST_GUESS
-        reachable = self.ranker.still_reachable()
-        if reachable <= 2:
+        remaining = np.sum(self.ranker.reachable)
+        if remaining <= 2:
             logger.debug('Reached endgame. Choosing likely solution to win.')
             solutions, _ = self.ranker.likely_solutions()
             assert solutions.size > 0, 'Could not find likely solutions.'
@@ -46,6 +46,8 @@ class Engine:
 
     def feedback(self, guess: str, squares: str):
         """Update internal state with guess and squares result."""
+        assert len(guess) == len(squares), \
+            f'Mismatch in guess {len(guess)} and square {len(squares)} lengths'
         self.ranker.update(guess, squares)
         reachable, entropy = self.ranker.remaining_state()
         logger.info('Reduced possibilities by %d',
@@ -68,6 +70,8 @@ class Engine:
 
     def simulate(self, solution: str) -> Game:
         """Simulate playing with defined solution. Return constructed game."""
+        self.reset()
+        logger.info('Simulating engine game with solution %s', solution)
         game = Game(self.ranker.words, self.ranker.patterns)
         game.set_solution(solution)
         while True:
@@ -80,6 +84,7 @@ class Engine:
 
     def reset(self):
         """Reset the internal state for a new game."""
+        logger.debug('Resetting engine state')
         self.ranker.reset()
         # Initial item in reachable and entropy history remains constant
         self.reachable_hist = self.reachable_hist[:1]

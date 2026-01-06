@@ -17,12 +17,17 @@ class Square(Enum):
     GREEN = '\U0001F7E9'
 
 
+SQUARE_VALUES = {item.value for item in Square}
+
+BEST_FIRST_GUESS = 'tares'
+
+
 def convert_squares(user_str: str) -> str:
     """Convert convenience string of b, y, and g into squares."""
-    assert all(letter in ('b', 'y', 'g') for letter in user_str)
     values = []
     for letter in user_str:
-        assert letter in ('b', 'y', 'g')
+        assert letter in ('b', 'y', 'g'), \
+            f'Unrecognized character {letter} in squares string'
         if letter == 'b':
             values.append(Square.BLACK.value)
         elif letter == 'y':
