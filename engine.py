@@ -13,6 +13,7 @@ from ranking import Ranker
 
 logger = logging.getLogger(__name__)
 
+_STRATEGY_PHASE_SWITCH = 2
 
 class Engine:
     """Wordle playing engine."""
@@ -34,7 +35,7 @@ class Engine:
             logger.debug('Using cached first guess %s', BEST_FIRST_GUESS)
             return BEST_FIRST_GUESS
         remaining = np.sum(self.ranker.reachable)
-        if remaining <= 2:
+        if remaining <= _STRATEGY_PHASE_SWITCH:
             logger.debug('Reached endgame. Choosing likely solution to win.')
             solutions, _ = self.ranker.likely_solutions()
             assert solutions.size > 0, 'Could not find likely solutions.'

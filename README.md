@@ -86,6 +86,19 @@ The logs tell you that after guessing `hello` and seeing `⬛⬛⬛🟩🟨`:
 
 You are not obligated to pick according to the engine. The tables will update according to whatever word you pick and its corresponding square pattern. You can even turn off suggestions if you're looking to play puzzles as a challenge. Do what makes your heart happy!
 
+## Simulation
+
+The Jupyter notebook `simulation.ipynb` provides an interactive environment for running puzzle simulations by using the engine as a bot. Essentially, it's the computer playing against itself. We graph the entropy after each round to visualize how the bot iteratively prunes the solution space.
+
+![Entropy graph for simulated Wordle games](resources/simulation_graph.png)
+
+The bot follows a simple strategy in an attempt to solve the puzzle in as few rounds as possible.
+
+1. While there are more than $k$ possibilities -- equivalently, while the entropy is greater than $\log_2(k)$, choose the guess that is expected to provide the most information (highest entropy).
+2. When there are at most $k$ possibilities -- equivalently, when the entropy is no more than $\log_2(k)$, choose the solution that most frequently occurs in natural language until the correct answer is reached.
+
+The hyperparameter $k$ represents how lucky we're feeling. A low value for $k$ means that we attempt to reduce the solution space as much as possible before shooting for a solution. Conversely, a high value for $k$ means that we start guessing solutions with less information. The bot uses a conservative value of $k = 2$ and only goes for solutions when it's a binary choice.
+
 ## Algorithm
 
 Calculate the entropy of each possible guess and square permutation. This will be stored in an array of shape (`NUM_WORDS` , $3^N$) where $N$ = `WORD_LEN`. We will assume a uniform probability distribution over the possible words. The probability $P(s | w)$ of getting square pattern $s$ after guessing word $w \in W$ is simply the proportion of words $c$ in the corpus such that `is_match(w, c, s)`. We define the information gained by this guess (measured in bits) as:
