@@ -43,8 +43,8 @@ class Game:
         self.sol_idx = solution_index
         logger.debug('Initialized game with solution %s', self.solution)
 
-    def current_turn(self) -> int:
-        """Return the current turn number."""
+    def current_round(self) -> int:
+        """Return the current round number."""
         return len(self.guess_hist)
 
     def append(self, word: str, squares: str) -> bool:
@@ -55,8 +55,8 @@ class Game:
         self.guess_hist.append(word)
         self.square_hist.append(squares)
         logger.info(
-            'Turn %d: %s %s',
-            self.current_turn(),
+            'Round %d: %s %s',
+            self.current_round(),
             word,
             squares)
         return all(sq == Square.GREEN.value for sq in squares)
@@ -70,5 +70,5 @@ class Game:
         self.append(word, result)
         is_win = word == self.solution
         if is_win:
-            logger.info('Completed game in %d turns', self.current_turn())
+            logger.info('Completed game in %d rounds', self.current_round())
         return result, is_win

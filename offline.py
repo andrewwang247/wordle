@@ -43,7 +43,7 @@ def play_one_round(
 @option('--solution', '-s', type=str, default=None,
         help='Provide a solution for the game. Random if not set.')
 @option('--infolen', '-i', type=int, default=10,
-        help='If assisting, max # of suggestions to log per turn.')
+        help='If assisting, max # of suggestions to log per round.')
 def main(assist: bool, solution: str, infolen: int):
     """Play Wordle with a provided or random solution."""
     game, engine = initialize_resources()

@@ -35,7 +35,7 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
 
 @command()
 @option('--infolen', '-i', type=int, default=10,
-        help='Max # of suggestions to log per turn.')
+        help='Max # of suggestions to log per round.')
 def main(infolen: int):
     """Play Wordle with an unknown solution."""
     game, engine = initialize_resources()
