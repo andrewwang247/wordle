@@ -15,6 +15,7 @@ from wordfreq import zipf_frequency
 
 logger = logging.getLogger(__name__)
 
+BEST_FIRST_GUESS = 'tares'
 _DEFAULT_LANGUAGE = 'en'
 
 
@@ -45,9 +46,9 @@ class Ranker:
     def remaining_state(self) -> Tuple[int, float]:
         """Compute the internal entropy of the reachable space."""
         total_reachable = self.still_reachable()
-        logger.info('Possibilities: %d', total_reachable)
+        logger.info('Remaining possiblities: %d', total_reachable)
         space_bits = 0. if total_reachable == 0 else log2(total_reachable)
-        logger.info('Entropy: %.2f', space_bits)
+        logger.info('Remaining entropy: %.2f', space_bits)
         return total_reachable, space_bits
 
     def still_reachable(self) -> int:
@@ -56,7 +57,7 @@ class Ranker:
 
     def update(self, guess: str, squares: str):
         """Update internal state with guess and squares result."""
-        assert guess in self.index, f'Guess {guess} is not in dictionary.'
+        assert guess in self.index, f'{guess} is not in dictionary.'
         idx = self.index.get_loc(guess)
         squares_non_match = self.patterns[idx, :] != squares
         self.reachable[squares_non_match] = False

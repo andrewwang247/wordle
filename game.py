@@ -28,13 +28,13 @@ class Game:
     def set_solution(self, solution: str):
         """Initialize game with a given solution."""
         assert solution in self.index, \
-            f'Solution {solution} is not in dictionary.'
+            f'{solution} is not in dictionary.'
         self.solution = solution
         self.guess_hist = []
         solution_index = self.index.get_loc(solution)
         assert isinstance(solution_index, int)
         self.sol_idx = solution_index
-        logger.info('Initialized game with solution %s', solution)
+        logger.debug('Initialized game with solution %s', solution)
 
     def current_turn(self) -> int:
         """Return the current turn number."""
@@ -43,16 +43,16 @@ class Game:
     def guess(self, word: str) -> Tuple[str, bool]:
         """Process a guess and return the square combo + win state."""
         assert self.solution is not None, 'Solution was not set.'
-        assert word in self.index, f'Guess {word} is not in dictionary.'
+        assert word in self.index, f'{word} is not in dictionary.'
         self.guess_hist.append(word)
         gs_idx = self.index.get_loc(word)
         result = str(self.patterns[gs_idx, self.sol_idx])
         logger.info(
-            'Guess %d: %s with result %s',
+            'Turn %d: %s %s',
             self.current_turn(),
             word,
             result)
         is_win = word == self.solution
         if is_win:
-            logger.info('Completed game in %d turns', len(self.guess_hist))
+            logger.info('Completed game in %d turns', self.current_turn())
         return result, is_win
