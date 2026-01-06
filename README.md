@@ -8,6 +8,8 @@ Play [Wordle](https://en.wikipedia.org/wiki/Wordle) with an engine that combines
 
 ## Usage
 
+### Offline
+
 ```text
 Usage: offline.py [OPTIONS]
 
@@ -19,6 +21,8 @@ Options:
   -i, --infolen INTEGER  If assisting, max # of suggestions to log per turn.
   --help                 Show this message and exit.
 ```
+
+### Online
 
 ```text
 Usage: online.py [OPTIONS]
@@ -34,8 +38,10 @@ Options:
 
 The engine helps the user by providing 2 sorted tables at each round.
 
-1. Viable solutions in this round, sorted by their [Zipf frequency](https://en.wikipedia.org/wiki/Zipf%27s_law), a human-friendly logarithmic scale that measures a word's frequency in natural language as the $\log_{10}$ of its occurence per billion words. When you're ready to take a stab at the solution, consult this table.
+1. Possible solutions in this round, sorted by their [Zipf frequency](https://en.wikipedia.org/wiki/Zipf%27s_law), a human-friendly logarithmic scale that measures a word's frequency in natural language as the $\log_{10}$ of its occurence per billion words. When you're ready to take a stab at the solution, consult this table.
 2. Guesses that are most likely to yield the most information in the next round, sorted by their [Shannon entropy](https://en.wikipedia.org/wiki/Entropy_(information_theory)) in bits. Intuitively, these guesses are expected to cut down the remaining possibilities by the largest amount. Note that an informative guess is not necessarily (and often isn't) one that matches the existing square patterns.
+
+### Example
 
 As an example, consider the first round of a game where you open with `hello` and the solution is `world`. You can expect to see:
 
@@ -78,9 +84,9 @@ daisy    4.240403
 miyas    4.226080
 ```
 
-The logs tell you that after guessing `hello` and seeing `⬛⬛⬛🟩🟨`:
+The logs tell you that after guessing `hello` and seeing ⬛⬛⬛🟩🟨:
 
-- You've reduced the number of possible solutions from 14855 to 121. This round contained 6.94 bits of information, reducing the entropy from 13.86 bits to 6.92 bits.
+- You've reduced the number of possiblities from 14855 to 121. This round contained 6.94 bits of information, reducing the entropy from 13.86 bits to 6.92 bits.
 - If you're feeling lucky, you can see among the viable solutions, `would` is the one that occurs most frequently in natural language and would be a suitable pick.
 - If 121 possibilities is still too uncertain for you, then `sayid` is expected to be the most informative guess. It's expected to reduce the entropy of the space by 4.4 bits.
 
@@ -88,30 +94,50 @@ You are not obligated to pick according to the engine. The tables will update ac
 
 ## Simulation
 
-The Jupyter notebook `simulation.ipynb` provides an interactive environment for running puzzle simulations by using the engine as a bot. Essentially, it's the computer playing against itself. We graph the entropy after each round to visualize how the bot iteratively prunes the solution space.
+The Jupyter notebook `simulation.ipynb` provides an interactive environment for running puzzle simulations by using the engine as a bot. Essentially, it's the computer playing against itself. We graph the entropy after each round to visualize how the bot iteratively prunes the possibilities space.
 
 ![Entropy graph for simulated Wordle games](resources/simulation_graph.png)
+
+### Strategy
 
 The bot follows a simple strategy in an attempt to solve the puzzle in as few rounds as possible.
 
 1. While there are more than $k$ possibilities -- equivalently, while the entropy is greater than $\log_2(k)$, choose the guess that is expected to provide the most information (highest entropy).
-2. When there are at most $k$ possibilities -- equivalently, when the entropy is no more than $\log_2(k)$, choose the solution that most frequently occurs in natural language until the correct answer is reached.
+2. When there are at most $k$ possibilities -- equivalently, when the entropy is no more than $\log_2(k)$, choose the possibility that most frequently occurs in natural language until the correct answer is reached.
 
-The hyperparameter $k$ represents how lucky we're feeling. A low value for $k$ means that we attempt to reduce the solution space as much as possible before shooting for a solution. Conversely, a high value for $k$ means that we start guessing solutions with less information. The bot uses a conservative value of $k = 2$ and only goes for solutions when it's a binary choice.
+The hyperparameter $k$ represents how lucky we're feeling. A low value for $k$ means that we attempt to reduce the possibilities space as much as possible before shooting for a solution. Conversely, a high value for $k$ means that we start guessing solutions with less information. The bot uses a conservative value of $k = 2$ and only goes for solutions when it's a binary choice.
 
 ## Algorithm
 
-Calculate the entropy of each possible guess and square permutation. This will be stored in an array of shape (`NUM_WORDS` , $3^N$) where $N$ = `WORD_LEN`. We will assume a uniform probability distribution over the possible words. The probability $P(s | w)$ of getting square pattern $s$ after guessing word $w \in W$ is simply the proportion of words $c$ in the corpus such that `is_match(w, c, s)`. We define the information gained by this guess (measured in bits) as:
+### Information
+
+A round $r$ consists of both the guess and the squares that tell us if each character is correct, misplaced, or nonexistant, e.g. `fjord` and 🟩⬛🟩⬛🟨. Informally, the information $I(r)$ of the round measures the extent to which it reduces the possibilities space. Let $p$ be the probability of encountering round $r$ at this stage. The information is defined as
 
 ```math
-I(w, s) = - \log_2 P(s | w) = - \log_2 \left( \frac{\text{matches}(w, s)}{|W|} \right)
+I(r) = \log_2 \left( \frac{1}{p} \right) = - \log_2 ( p )
 ```
 
-We want to choose the word that maximizes the expected information gain. That is, the entropy $H$ given by the following sum over all square patterns:
+This number quantifies the number of times we cut the probability space in half, with units of bits. Assume that the probability distribution is uniform, i.e. every word in the dictionary is equally likely to be the solution. Continuing with our example, the probability that we'd see `fjord` and 🟩⬛🟩⬛🟨 is
 
 ```math
-H(w) = - \sum_s P(s | w) \cdot \log_2 P(s | w)
+p(\text{fjord, 🟩⬛🟩⬛🟨}) = \frac{\text{\# of possibilities matching fjord and 🟩⬛🟩⬛🟨}}{\text{total \# of possibilities}}
 ```
+
+Using our current dictionary and assuming we guess `fjord` and see 🟩⬛🟩⬛🟨 on the first round, we have reduced our space from 14855 possibilities to only 3. Those being `foods`, `foody`, and `feods` - an archaic term for "an estate granted to a vassal by a feudal lord in exchange for service". It follows that
+
+```math
+I(r) = -\log_2 \left( \frac{3}{14855} \right) \approx 12.27
+```
+
+which shows that we've chopped our possibilities space in half more than 12 times. A very informative round!
+
+### Entropy
+
+The entropy of a random variable quantifies the average uncertainty associated with the variable. In this context, it can be viewed as the expected information we would gain by "resolving" the variable.
+
+TODO: continue this section.
+
+See [acknowledgements](#acknowledgements) for links to YouTube videos that explain this in greater depth.
 
 ## Acknowledgements
 
