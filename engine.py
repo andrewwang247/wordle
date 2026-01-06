@@ -50,9 +50,10 @@ class Engine:
             f'Mismatch in guess {len(guess)} and square {len(squares)} lengths'
         self.ranker.update(guess, squares)
         reachable, entropy = self.ranker.remaining_state()
-        logger.info('Reduced possibilities by %d',
+        logger.info('Reduced possibilities by %d words',
                     self.reachable_hist[-1] - reachable)
-        logger.info('Reduced entropy by %.2f', self.entropy_hist[-1] - entropy)
+        logger.info('Reduced entropy by %.2f bits',
+                    self.entropy_hist[-1] - entropy)
         self.reachable_hist.append(reachable)
         self.entropy_hist.append(entropy)
 
@@ -60,7 +61,7 @@ class Engine:
         """Log ranked guesses and solutions to assist player."""
         solutions, sol_freqs = self.ranker.likely_solutions()
         sol_df = pd.DataFrame(index=pd.Index(solutions, name='solutions'),
-                              data=sol_freqs, columns=['log freq'])
+                              data=sol_freqs, columns=['log_freq'])
         logger.info('\n%s', sol_df[:infolen])
 
         guesses, gs_entrops = self.ranker.informative_guesses()

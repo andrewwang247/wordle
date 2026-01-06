@@ -43,9 +43,9 @@ class Ranker:
     def remaining_state(self) -> Tuple[int, float]:
         """Compute the internal entropy of the reachable space."""
         total_reachable = np.sum(self.reachable)
-        logger.info('Remaining possiblities: %d', total_reachable)
+        logger.info('Remaining possiblities: %d words', total_reachable)
         space_bits = 0. if total_reachable == 0 else log2(total_reachable)
-        logger.info('Remaining entropy: %.2f', space_bits)
+        logger.info('Remaining entropy: %.2f bits', space_bits)
         return total_reachable, space_bits
 
     def still_reachable(self) -> np.ndarray:

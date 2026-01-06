@@ -40,12 +40,14 @@ def play_one_round(
 @command()
 @option('--assist', '-a', is_flag=True, default=False,
         help='Display frequency and entropy assistance to player.')
-@option('--infolen', '-i', type=int, default=6,
+@option('--solution', '-s', type=str, default=None,
+        help='Provide a solution for the game. Random if not set.')
+@option('--infolen', '-i', type=int, default=10,
         help='If assisting, max # of suggestions to log per turn.')
-def main(assist: bool, infolen: int):
-    """Play Wordle with a randomly chosen solution."""
+def main(assist: bool, solution: str, infolen: int):
+    """Play Wordle with a provided or random solution."""
     game, engine = initialize_resources()
-    game.set_solution()
+    game.set_solution(solution)
 
     if assist:
         logger.info('The optimal starting guess is %s', BEST_FIRST_GUESS)
@@ -53,8 +55,8 @@ def main(assist: bool, infolen: int):
         pass
 
     logger.info('\n\nSimulated engine playthrough')
-    solution = game.solution
-    assert solution is not None, 'Game solution is None'
+    answer = game.solution
+    assert answer is not None, 'Game solution should not be None'
     engine.simulate(solution)
 
 
