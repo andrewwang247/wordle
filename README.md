@@ -4,7 +4,7 @@ Play [Wordle](https://en.wikipedia.org/wiki/Wordle) with an engine that combines
 
 1. A self-contained "offline" mode with a provided or random solution. The user is prompted for guesses and is shown the resulting square pattern. Optional engine assistance is available.
 2. An assistant "online" mode that helps the user solve an external puzzle with an unknown solution. The user is promped for both guesses and the square pattern returned by the puzzle.
-3. An exploratory simulations mode where the user can play around with the engine solving simulated puzzles in a Jupyter notebook.
+3. An exploratory simulations mode where the user can play around with the engine solving simulated puzzles in a Jupyter notebook as well as examine the data more closely.
 
 ## Usage
 
@@ -18,7 +18,7 @@ Usage: offline.py [OPTIONS]
 Options:
   -a, --assist           Display frequency and entropy assistance to player.
   -s, --solution TEXT    Provide a solution for the game. Random if not set.
-  -i, --infolen INTEGER  If assisting, max # of suggestions to log per turn.
+  -i, --infolen INTEGER  If assisting, max # of suggestions to log per round.
   --help                 Show this message and exit.
 ```
 
@@ -30,7 +30,7 @@ Usage: online.py [OPTIONS]
   Play Wordle with an unknown solution.
 
 Options:
-  -i, --infolen INTEGER  Max # of suggestions to log per turn.
+  -i, --infolen INTEGER  Max # of suggestions to log per round.
   --help                 Show this message and exit.
 ```
 
@@ -51,37 +51,37 @@ INFO:ranking:Remaining entropy: 13.86 bits
 INFO:__main__:The optimal starting guess is tares
 
 Guess: hello
-INFO:game:Turn 1: hello ⬛⬛⬛🟩🟨
+INFO:game:Round 1: hello ⬛⬛⬛🟩🟨
 INFO:ranking:Remaining possiblities: 121 words
 INFO:ranking:Remaining entropy: 6.92 bits
 INFO:engine:Reduced possibilities by 14734 words
 INFO:engine:Reduced entropy by 6.94 bits
 INFO:engine:
-           log_freq
-solutions          
-would          6.27
-could          6.06
-world          5.89
-goals          4.95
-tools          4.59
-souls          4.21
-fools          3.88
-pools          3.87
-bowls          3.75
-soils          3.57
+          log_freq
+possible          
+would         6.27
+could         6.06
+world         5.89
+goals         4.95
+tools         4.59
+souls         4.21
+fools         3.88
+pools         3.87
+bowls         3.75
+soils         3.57
 INFO:engine:
-          entropy
-guesses          
-sayid    4.401152
-amids    4.356567
-diyas    4.349188
-maids    4.310339
-staid    4.286204
-stoai    4.266305
-dooms    4.265757
-wadis    4.249081
-daisy    4.240403
-miyas    4.226080
+         entropy
+guesses         
+sayid      4.401
+amids      4.357
+diyas      4.349
+maids      4.310
+staid      4.286
+stoai      4.266
+dooms      4.266
+wadis      4.249
+daisy      4.240
+miyas      4.226
 ```
 
 The logs tell you that after guessing `hello` and seeing ⬛⬛⬛🟩🟨:
@@ -109,12 +109,14 @@ The hyperparameter $k$ represents how lucky we're feeling. A low value for $k$ m
 
 ## Algorithm
 
+Let $W$ be the set of words in our dictionary, $m$ be the length of words ($m = 5$ for Wordle), and $S$ be the set of $3^m$ possible square results we'd see after guessing. A round consists of both a guess word $w \in W$ from the dictionary and the square pattern $s \in S$ that tells us if each character is correct, misplaced, or nonexistant, e.g. $w = \text{fjord}$ and $s = \text{🟩⬛🟩⬛🟨}$.
+
 ### Information
 
-A round $r$ consists of both the guess and the squares that tell us if each character is correct, misplaced, or nonexistant, e.g. `fjord` and 🟩⬛🟩⬛🟨. Informally, the information $I(r)$ of the round measures the extent to which it reduces the possibilities space. Let $p$ be the probability of encountering round $r$ at this stage. The information is defined as
+Informally, the information $I(w, s)$ of a round measures the extent to which it reduces the possibilities space. Let $p(w, s)$ be the probability of encountering the round $(w, s)$ at this stage. The information is defined as
 
 ```math
-I(r) = \log_2 \left( \frac{1}{p} \right) = - \log_2 ( p )
+I(w, s) = \log_2 \left( \frac{1}{p(w, s)} \right) = - \log_2 p(w, s)
 ```
 
 This number quantifies the number of times we cut the probability space in half, with units of bits. Assume that the probability distribution is uniform, i.e. every word in the dictionary is equally likely to be the solution. Continuing with our example, the probability that we'd see `fjord` and 🟩⬛🟩⬛🟨 is
@@ -126,18 +128,24 @@ p(\text{fjord, 🟩⬛🟩⬛🟨}) = \frac{\text{\# of possibilities matching f
 Using our current dictionary and assuming we guess `fjord` and see 🟩⬛🟩⬛🟨 on the first round, we have reduced our space from 14855 possibilities to only 3. Those being `foods`, `foody`, and `feods` - an archaic term for "an estate granted to a vassal by a feudal lord in exchange for service". It follows that
 
 ```math
-I(r) = -\log_2 \left( \frac{3}{14855} \right) \approx 12.27
+I(\text{fjord, 🟩⬛🟩⬛🟨}) = -\log_2 \left( \frac{3}{14855} \right) \approx 12.27
 ```
 
 which shows that we've chopped our possibilities space in half more than 12 times. A very informative round!
 
 ### Entropy
 
-The entropy of a random variable quantifies the average uncertainty associated with the variable. In this context, it can be viewed as the expected information we would gain by "resolving" the variable.
+The entropy of a random variable quantifies its average uncertainty. It tells us the expected information we would gain by "resolving" the variable's value. At any given round and for each word $w \in W$, we can define a random variable $X_w$ over $S$ based on the probability that we would see each of the square patterns. That is, $X_w(s) = p(w, s)$. The entropy $H$ of $X_w$ is the expected value of its information:
 
-TODO: continue this section.
+```math
+H(X_w) = E[ I(X_w) ] = \sum_{s \in S} p(w, s) \cdot I(w, s) = - \sum_{s \in S} p(w, s) \cdot \log_2 p(w, s)
+```
 
-See [acknowledgements](#acknowledgements) for links to YouTube videos that explain this in greater depth.
+By convention, set $I(w, s) = 0$ whenever $p(w, s) = 0$ in this expression to avoid taking logarithms of 0. This means that if $s$ is impossible after guessing $w$ this round, exclude it from the summation. Using our example word `fjord`, compute square probabilities and sort descending. Plotting this series against information, we can visualize the correlation.
+
+![Probability and information plot for fjord](resources/information_graph.png)
+
+Taking the "inner product" of these 2 series yields the entropy when $w = \text{fjord}$, which is $H(X_w) \approx 3.64$ bits. You can further explore entropy in round 1 in the later cells of `simulation.ipynb`. The pre-computed initial round entropy with frequency data is stored in the resource file `resources/initial_data.csv`.
 
 ## Acknowledgements
 

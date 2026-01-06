@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 _STRATEGY_PHASE_SWITCH = 2
 
+
 class Engine:
     """Wordle playing engine."""
 
@@ -29,9 +30,9 @@ class Engine:
         self.reachable_hist: List[int] = [reachable]
         self.entropy_hist: List[float] = [entropy]
 
-    def make_guess(self, turn: int) -> str:
+    def make_guess(self, round: int) -> str:
         """Decide on the optimal next guess."""
-        if self.cache_first_guess and turn == 0:
+        if self.cache_first_guess and round == 0:
             logger.debug('Using cached first guess %s', BEST_FIRST_GUESS)
             return BEST_FIRST_GUESS
         remaining = np.sum(self.ranker.reachable)
@@ -60,14 +61,14 @@ class Engine:
 
     def log_assistance(self, infolen: int):
         """Log ranked guesses and solutions to assist player."""
-        solutions, sol_freqs = self.ranker.likely_solutions()
-        sol_df = pd.DataFrame(index=pd.Index(solutions, name='solutions'),
-                              data=sol_freqs, columns=['log_freq'])
-        logger.info('\n%s', sol_df[:infolen])
+        possible, freqs = self.ranker.likely_solutions()
+        pos_df = pd.DataFrame(index=pd.Index(possible, name='possible'),
+                              data=freqs, columns=['log_freq'])
+        logger.info('\n%s', pos_df[:infolen])
 
-        guesses, gs_entrops = self.ranker.informative_guesses()
+        guesses, entrops = self.ranker.informative_guesses()
         gs_df = pd.DataFrame(index=pd.Index(guesses, name='guesses'),
-                             data=gs_entrops, columns=['entropy'])
+                             data=np.round(entrops, 3), columns=['entropy'])
         logger.info('\n%s', gs_df[:infolen])
 
     def simulate(self, solution: str) -> Game:
@@ -77,7 +78,7 @@ class Engine:
         game = Game(self.ranker.words, self.ranker.patterns)
         game.set_solution(solution)
         while True:
-            guess = self.make_guess(game.current_turn())
+            guess = self.make_guess(game.current_round())
             squares, is_win = game.guess(guess)
             if is_win:
                 break
