@@ -7,6 +7,7 @@ import logging
 from typing import List
 from functools import partial
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from wordfreq import zipf_frequency
 from constants import BEST_FIRST_GUESS, DEFAULT_LANGUAGE
@@ -21,7 +22,8 @@ _STRATEGY_PHASE_SWITCH = 2
 class Engine:
     """Wordle playing engine."""
 
-    def __init__(self, words: np.ndarray, patterns: np.ndarray,
+    def __init__(self, words: npt.NDArray[np.str_],
+                 patterns: npt.NDArray[np.str_],
                  cache_first_guess: bool = True):
         """Construct with ranker to help decide next guess."""
         self.words = words
@@ -72,8 +74,8 @@ class Engine:
     def likely_solutions(self) -> pd.DataFrame:
         """Rank the most likely solutions based on word frequency."""
         possible = self.ranker.still_reachable()
-        return self.log_freq.loc[possible] \
-            .sort_values(by='log_freq', ascending=False)
+        subset: pd.DataFrame = self.log_freq.loc[possible]  # type: ignore
+        return subset.sort_values(by='log_freq', ascending=False)
 
     def log_assistance(self, infolen: int):
         """Log ranked guesses and solutions to assist player."""

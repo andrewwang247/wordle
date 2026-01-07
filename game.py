@@ -6,6 +6,7 @@ Copyright 2026. Andrew Wang.
 import logging
 from typing import List, Optional, Tuple
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from constants import Square, SQUARE_VALUES
 
@@ -15,7 +16,8 @@ logger = logging.getLogger(__name__)
 class Game:
     """Basic framework for playing Wordle."""
 
-    def __init__(self, words: np.ndarray, patterns: np.ndarray):
+    def __init__(self, words: npt.NDArray[np.str_],
+                 patterns: npt.NDArray[np.str_]):
         """Initialize game with references to immutable data and a solution."""
         # Fast way to index given a word.
         self.index = pd.Index(words)  # (n,)
