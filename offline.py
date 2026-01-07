@@ -56,7 +56,7 @@ def main(assist: bool, solution: str, infolen: int):
     logger.info('\n\nSimulated engine playthrough')
     answer = game.solution
     assert answer is not None, 'Game solution should not be None'
-    engine.simulate(solution)
+    engine.simulate(answer)
 
 
 if __name__ == '__main__':
