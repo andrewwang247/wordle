@@ -46,10 +46,21 @@ The engine helps the user by providing 2 sorted tables at each round.
 As an example, consider the first round of a game where you open with `hello` and the solution is `world`. You can expect to see:
 
 ```text
-$ python3 offline.py -a -s world -i 5
+$ python3 offline.py -a -s world -i 4
 INFO:ranking:Remaining possiblities: 14855 words
 INFO:ranking:Remaining uncertainty: 13.86 bits
-INFO:__main__:The optimal starting guess is tares
+INFO:cache:Likely solutions
+       log_freq
+about      6.40
+their      6.33
+there      6.31
+which      6.30
+INFO:cache:Informative guesses
+        entropy
+tares  6.159376
+lares  6.114794
+rales  6.096831
+rates  6.084062
 
 Guess: hello
 INFO:game:Round 1: hello ⬛⬛⬛🟩🟨
@@ -57,22 +68,18 @@ INFO:ranking:Remaining possiblities: 121 words
 INFO:ranking:Remaining uncertainty: 6.92 bits
 INFO:engine:Reduced possibilities by 14734 words
 INFO:engine:Reduced uncertainty by 6.94 bits
-INFO:engine:
-          log_freq
-possible          
-would         6.27
-could         6.06
-world         5.89
-goals         4.95
-tools         4.59
-INFO:engine:
-         entropy
-guesses         
-sayid      4.401
-amids      4.357
-diyas      4.349
-maids      4.310
-staid      4.286
+INFO:engine:Likely solutions
+       log_freq
+would      6.27
+could      6.06
+world      5.89
+goals      4.95
+INFO:engine:Informative guesses
+       entropy
+sayid    4.401
+amids    4.357
+diyas    4.349
+maids    4.310
 ```
 
 The logs tell you that after guessing `hello` and seeing ⬛⬛⬛🟩🟨:
@@ -142,13 +149,13 @@ By convention, set $I(w, s) = 0$ whenever $p(w, s) = 0$ in this expression to av
 
 ![Probability and information plot for fjord](resources/information_graph.png)
 
-Taking the "inner product" of these 2 series yields the entropy when $w = \text{fjord}$, which is $H(X_w) \approx 3.64$ bits. You can further explore entropy in the later cells of `simulation.ipynb`. The pre-computed initial round entropy with frequency data is stored in the resource file `resources/initial_data.csv`. The entropy of $w$ tells us its expected information value, which can be used to rank the quality of guesses for the next round. With each additional round, we must recount the square patterns, affecting the entropy computation of following rounds. For a solved puzzle, the uncertainty of the last possibilities space is 0 as there is only 1 possibility remaining and $\log_2 1 = 0$. By induction on our previous observation that $I(\Phi_{r + 1}) = I(\Phi_r) - I(w, s)$,
+Taking the "inner product" of these 2 series yields the entropy when $w = \text{fjord}$, which is $H(X_w) \approx 3.64$ bits. The entropy of $w$ tells us its expected information value, which can be used to rank the quality of guesses for the next round. With each additional round, we must recount the square patterns, affecting the entropy computation of following rounds. For a solved puzzle, the uncertainty of the last possibilities space is 0 as there is only 1 possibility remaining and $\log_2 1 = 0$. By induction on our previous observation that $I(\Phi_{r + 1}) = I(\Phi_r) - I(w, s)$,
 
 ```math
 I(W) = \sum_r I(w_r, s_r)
 ```
 
-Our goal is to minimize the number of rounds it takes to reduce this uncertainty down to 0. Equivalently, we want to reduce the number of terms in the sum above by maximizing the expected information of each round, hence the strategy of choosing maximal entropy guesses. With our current dictionary, the maximum entropy in the initial round is attained by `tares`, which makes it an optimal first guess.
+Our goal is to minimize the number of rounds it takes to reduce this uncertainty down to 0. Equivalently, we want to reduce the number of terms in the sum above by maximizing the expected information of each round, hence the strategy of choosing maximal entropy guesses.
 
 ## Data and Caching
 
@@ -190,8 +197,9 @@ $ du -h bin/*
 
 The other somewhat expensive operation is generating suggestions after each round. While word frequency data can be accessed quickly, entropy requires taking per-row unique pattern counts, which isn't easily vectorizable in numpy. The initial entropy calculation takes about 40 seconds on my desktop. However, this is less of an issue as:
 
-1. We already know the optimal opening word is `tares`, so we automatically guess that first during engine simulations.
-2. As the possibilities space is pruned, calculating entropy takes much less time. The second pass usually takes under a second.
+1. We already know the opening round entropies. They are stored in `resources/initial_data.csv`. See the later cells of `simulation.ipynb` for how this was generated.
+2. The engine automatically opens with `tares` during simulations as it's the optimal opening guess with the highest entropy.
+3. As the possibilities space is pruned, calculating entropy takes much less time. The second pass usually takes under a second.
 
 ## Acknowledgements
 

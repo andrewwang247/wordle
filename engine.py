@@ -32,7 +32,7 @@ class Engine:
             zipf_frequency, lang=DEFAULT_LANGUAGE), otypes=[float])
         self.log_freq = pd.DataFrame(
             data=freq_vec(words),
-            index=pd.Index(words, name='possible'),
+            index=words,
             columns=['log_freq'])
 
         # Track the history of reachable counts and entropies
@@ -78,12 +78,12 @@ class Engine:
     def log_assistance(self, infolen: int):
         """Log ranked guesses and solutions to assist player."""
         pos_df = self.likely_solutions()
-        logger.info('\n%s', pos_df[:infolen])
+        logger.info('Likely solutions\n%s', pos_df[:infolen])
 
         guesses, entrops = self.ranker.informative_guesses()
-        gs_df = pd.DataFrame(index=pd.Index(guesses, name='guesses'),
-                             data=np.round(entrops, 3), columns=['entropy'])
-        logger.info('\n%s', gs_df[:infolen])
+        gs_df = pd.DataFrame(data=np.round(entrops, 3),
+                             index=guesses, columns=['entropy'])
+        logger.info('Informative guesses\n%s', gs_df[:infolen])
 
     def simulate(self, solution: str) -> Game:
         """Simulate playing with defined solution. Return constructed game."""
