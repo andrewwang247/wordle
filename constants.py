@@ -19,8 +19,8 @@ class Square(Enum):
 
 SQUARE_VALUES = {item.value for item in Square}
 
-BEST_FIRST_GUESS = 'tares'
-DEFAULT_LANGUAGE = 'en'
+BEST_OPENER = 'tares'
+BEST_TARGETED_OPENER = 'tarse'
 
 
 def convert_squares(user_str: str) -> str:

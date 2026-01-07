@@ -45,10 +45,6 @@ class Ranker:
         logger.info('Remaining uncertainty: %.2f bits', uncertainty)
         return total_reachable, uncertainty
 
-    def still_reachable(self) -> npt.NDArray[np.str_]:
-        """Get the remaining reachable words that remain."""
-        return self.words[self.reachable]
-
     def update(self, guess: str, squares: str):
         """Update internal state with guess and squares result."""
         assert guess in self.index, f'{guess} is not in dictionary.'
@@ -68,6 +64,12 @@ class Ranker:
             = entropy(counts, axis=1, base=2)  # type: ignore
         sorted_idx = np.argsort(entropies)[::-1]
         return self.words[sorted_idx], entropies[sorted_idx]
+
+    def manual_prune(self, targets: npt.NDArray[np.str_]):
+        """Mark all targets as not reachable."""
+        logger.debug('Marking all target as unreachable')
+        mask = np.isin(self.words, targets)
+        self.reachable[~mask] = False
 
     def reset(self):
         """Reset the internal state to a clean slate."""

@@ -7,7 +7,7 @@ Copyright 2026. Andrew Wang.
 import logging
 from click import command, option
 from constants import convert_squares
-from cache import initialize_resources, log_initial_assistance
+from cache import load_words, load_patterns, log_initial_assistance
 from engine import Engine
 from game import Game
 
@@ -33,19 +33,27 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
 
 
 @command()
+@option('--targeted', '-t', is_flag=True, default=False,
+        help='Use known targets sub-list to prime engine.')
 @option('--infolen', '-i', type=int, default=10,
         help='Max # of suggestions to log per round.')
-def main(infolen: int):
+def main(targeted: bool, infolen: int):
     """Play Wordle with an unknown solution."""
-    game, engine = initialize_resources()
-    logger.info('Use "b", "y", "g" to denote squares color')
-    log_initial_assistance(infolen)
+    words, targets = load_words()
+    patterns = load_patterns()
+    game = Game(words, patterns)
+    engine = Engine(words, patterns, targets if targeted else None)
 
+    if targeted:
+        engine.log_assistance(infolen)
+    else:
+        log_initial_assistance(infolen)
+    logger.info('Use "b", "y", "g" to denote squares color')
     while not play_one_round(game, engine, infolen):
         pass
 
     answer = game.guess_hist[-1]
-    engine.simulate(answer)
+    engine.simulate(answer, targets if targeted else None)
 
 
 if __name__ == '__main__':
