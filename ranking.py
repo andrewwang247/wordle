@@ -40,7 +40,7 @@ class Ranker:
     def remaining_state(self) -> Tuple[int, float]:
         """Compute stats for the remaining reachable space."""
         total_reachable: int = np.sum(self.reachable)  # type: ignore
-        logger.info('Remaining possiblities: %d words', total_reachable)
+        logger.info('Remaining possibilities: %d words', total_reachable)
         uncertainty = 0. if total_reachable == 0 else log2(total_reachable)
         logger.info('Remaining uncertainty: %.2f bits', uncertainty)
         return total_reachable, uncertainty

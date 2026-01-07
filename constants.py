@@ -58,14 +58,14 @@ def wordle_compare(guess: str, answer: str,
 
     # We need to get the number (n) of times a guess letter in
     # a non-green spot occurs in expected. From there, we color
-    # the first (up to) n occurences of the letter yellow in guess.
+    # the first (up to) n occurrences of the letter yellow in guess.
     for cand in np.unique(guess_np[not_green]):
         # For every distinct character in guess not in a green spot,
         # get the number of times it appears in a non green answer spot.
         cand_count = np.count_nonzero(answer_np[not_green] == cand)
         # Mask for where this character appears in guess.
         matching_spots = guess_np == cand
-        # Get indicies where both not green and guess matches character.
+        # Get indices where both not green and guess matches character.
         possible_idx = np.where(not_green & matching_spots)[0]
         # Make all of those indices up to cand_count yellow.
         squares[possible_idx[:cand_count]] = Square.YELLOW.value
