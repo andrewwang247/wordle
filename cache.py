@@ -14,8 +14,6 @@ import numpy.typing as npt
 import pandas as pd
 from tqdm import tqdm
 from constants import wordle_compare
-from engine import Engine
-from game import Game
 
 logger = logging.getLogger(__name__)
 
@@ -24,20 +22,29 @@ _DICTIONARY_FILE = 'resources/words.txt'
 _INITIAL_DATA_FILE = 'resources/initial_data.csv'
 _PATTERN_ARCHIVE_FILE = 'resources/patterns.npz'
 _PATTERN_CACHE_FILE = 'resources/patterns.npy'
+_TARGETS_FILE = 'resources/targets.txt'
 
 
-def load_words() -> npt.NDArray[np.str_]:
-    """Load the dictionary array (n,) from words list."""
-    words = np.loadtxt(_DICTIONARY_FILE, dtype=str)
+def _load_txt(fname: str) -> npt.NDArray[np.str_]:
+    """Load words from a text file and validate properties."""
+    words = np.loadtxt(fname, dtype=str)
     len_vec = np.vectorize(len, otypes=[int])
     unique_lens = np.unique(len_vec(words))
     assert unique_lens.size == 1, \
-        'Words in dictionary must have uniform length'
+        f'Words in {fname} must have uniform length'
     assert np.unique(
-        words).size == words.size, 'Words in dictionary must be unique'
+        words).size == words.size, f'Words in {fname} must be unique'
     logger.debug('Loaded %d words of length %d from %s',
-                 words.size, unique_lens[0], _DICTIONARY_FILE)
+                 words.size, unique_lens[0], fname)
     return words
+
+
+def load_words() -> Tuple[npt.NDArray[np.str_], npt.NDArray[np.str_]]:
+    """Load the dictionary array (n,) and targets from words list."""
+    words = _load_txt(_DICTIONARY_FILE)
+    targets = _load_txt(_TARGETS_FILE)
+    assert np.all(np.isin(targets, words)), 'Targets must be subset of words'
+    return words, targets
 
 
 def compile_patterns():
@@ -46,7 +53,7 @@ def compile_patterns():
 
     Save the output patterns to a compressed numpy archive.
     """
-    words = load_words()
+    words = load_words()[0]
     logger.debug('Cross compiling %d patterns for %d words',
                  words.size**2, words.size)
     cmp_pat = np.vectorize(wordle_compare, otypes=[str])
@@ -87,15 +94,6 @@ def load_patterns() -> npt.NDArray[np.str_]:
     logger.debug('Writing patterns to cache %s', _PATTERN_CACHE_FILE)
     np.save(_PATTERN_CACHE_FILE, patterns)
     return patterns
-
-
-def initialize_resources() -> Tuple[Game, Engine]:
-    """Initialize a game and engine with words and patterns."""
-    words = load_words()
-    patterns = load_patterns()
-    game = Game(words, patterns)
-    engine = Engine(words, patterns)
-    return game, engine
 
 
 def log_initial_assistance(infolen: int):

@@ -30,6 +30,7 @@ Usage: online.py [OPTIONS]
   Play Wordle with an unknown solution.
 
 Options:
+  -t, --targeted         Use known targets sub-list to prime engine.
   -i, --infolen INTEGER  Max # of suggestions to log per round.
   --help                 Show this message and exit.
 ```
@@ -209,11 +210,13 @@ split -d -n 10 resources/patterns.npz bin/part_
 
 ### Generating Recommendations
 
-The other somewhat expensive operation is generating suggestions after each round. While word frequency data can be accessed quickly, entropy requires taking per-row unique pattern counts, which isn't easily vectorizable in numpy. The initial entropy calculation takes about 40 seconds on my machine. However, this is less of an issue as:
+The other somewhat expensive operation is generating suggestions after each round. While word frequency data can be accessed quickly, entropy requires taking per-row unique pattern counts, which isn't easily vectorizable in numpy. However, this is less of an issue as:
 
 1. We already know the opening round entropies. They are pre-computed and stored in `resources/initial_data.csv`.
-2. The engine automatically opens with `tares` during simulations as it's the optimal opening guess with the highest entropy.
+2. The engine automatically uses cached best opener during simulations as the first entropy pass can take a while.
 3. As the possibilities space is pruned, calculating entropy takes much less time. The second pass usually takes under a second.
+
+When using the `--targeted` flag in online mode, we essentially make a "shadow guess" that removes any word outside the target sublist `resources/targets.txt` from the possibilities space.
 
 ## Acknowledgements
 

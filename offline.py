@@ -6,7 +6,7 @@ Copy right 2026. Andrew Wang.
 # pylint: disable=no-value-for-parameter
 import logging
 from click import command, option
-from cache import initialize_resources, log_initial_assistance
+from cache import load_words, load_patterns, log_initial_assistance
 from game import Game
 from engine import Engine
 
@@ -44,7 +44,10 @@ def play_one_round(
         help='If assisting, max # of suggestions to log per round.')
 def main(assist: bool, solution: str, infolen: int):
     """Play Wordle with a provided or random solution."""
-    game, engine = initialize_resources()
+    words = load_words()[0]
+    patterns = load_patterns()
+    game = Game(words, patterns)
+    engine = Engine(words, patterns)
     game.set_solution(solution)
 
     if assist:
