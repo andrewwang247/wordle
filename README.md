@@ -96,6 +96,8 @@ The Jupyter notebook `simulation.ipynb` provides an interactive environment for 
 
 ![Uncertainty graph for simulated Wordle games](resources/simulation_graph.png)
 
+Because we do not log the final winning entropy, the index on the x-axis is one short of the actual number of rounds it took to solve the puzzle. The number of rounds it takes to solve a puzzle for any given solution is included in `resources/initial_data.csv`.
+
 ### Strategy
 
 The bot follows a simple strategy in an attempt to solve the puzzle in as few rounds as possible.
