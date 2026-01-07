@@ -38,14 +38,17 @@ def convert_squares(user_str: str) -> str:
     return ''.join(values)
 
 
-def wordle_compare(guess: str, answer: str, pbar: Optional[tqdm]) -> str:
+def wordle_compare(guess: str, answer: str,
+                   pbar: Optional[tqdm] = None) -> str:
     """
     Given a guess and an answer, generate the squares pattern.
 
     This runs in a very tight vectorized loop during compilation.
     """
-    guess_np = np.array(list(guess))
-    answer_np = np.array(list(answer))
+    assert len(guess) == len(answer), \
+        'Guess and answer must have matching lengths'
+    guess_np = np.array(list(guess), dtype='<1U')
+    answer_np = np.array(list(answer), dtype='<1U')
     squares = np.full_like(guess_np, Square.BLACK.value, dtype='<1U')
 
     # Green is the easiest case to handle by position.

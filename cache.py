@@ -10,6 +10,7 @@ from typing import Tuple
 from os import listdir, path
 from shutil import copyfileobj
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from tqdm import tqdm
 from constants import wordle_compare
@@ -25,7 +26,7 @@ _PATTERN_ARCHIVE_FILE = 'resources/patterns.npz'
 _PATTERN_CACHE_FILE = 'resources/patterns.npy'
 
 
-def load_words() -> np.ndarray:
+def load_words() -> npt.NDArray[np.str_]:
     """Load the dictionary array (n,) from words list."""
     words = np.loadtxt(_DICTIONARY_FILE, dtype=str)
     len_vec = np.vectorize(len, otypes=[int])
@@ -51,14 +52,15 @@ def compile_patterns():
     cmp_pat = np.vectorize(wordle_compare, otypes=[str])
     with tqdm(total=words.size**2) as pbar:
         # Matrix multiply vectorization magic.
-        patterns: np.ndarray = cmp_pat(words[:, np.newaxis], words, pbar)
+        patterns: npt.NDArray[np.str_] = cmp_pat(
+            words[:, np.newaxis], words, pbar)
     logger.debug('Writing patterns to cache %s', _PATTERN_CACHE_FILE)
     np.save(_PATTERN_CACHE_FILE, patterns)
     logger.debug('Writing patterns to archive %s', _PATTERN_ARCHIVE_FILE)
     np.savez_compressed(_PATTERN_ARCHIVE_FILE, patterns)
 
 
-def load_patterns() -> np.ndarray:
+def load_patterns() -> npt.NDArray[np.str_]:
     """Load already compiled patterns (n, n) from archive."""
     if path.exists(_PATTERN_CACHE_FILE):
         logger.debug('Loading pre-compiled cache %s', _PATTERN_CACHE_FILE)
