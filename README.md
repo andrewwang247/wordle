@@ -170,7 +170,7 @@ Two operations that come up again and again are:
 
 Producing square patterns follows a procedure that is difficult to vectorize in numpy. If you're interested, see `wordle_compare` in `constants.py`. Since our dictionary of $n = |W| = 14855$ words is known ahead of time, we should not repeatedly compute these values at runtime. Instead, cache an $n \times n$ matrix $C$ where $C[i, j]$ is the square pattern when guessing $w_i$ with solution $w_j$. This immediately solves the first operation with a simple index lookup. We can use it to solve the second operation by masking where the row $C[i, :]$ is equal to the square pattern, i.e. $w[C[i, :] == s]$ returns all compatibilities.
 
-This pre-compilation step takes around an hour on my desktop. If you swap out the dictionary, use `compile_patterns` in `cache.py`. The resulting pattern matrix is cached at 2 levels.
+This pre-compilation step takes around an hour on my machine. If you swap out the dictionary, use `compile_patterns` in `cache.py`. The resulting pattern matrix is cached at 2 levels.
 
 1. Fast access stored in an uncompressed `.npy` binary file that is generated on access. Used by default and takes up a lot of space.
 2. Github storage in a compressed `.npz` zipped archive that is split across partitions in `bin/` to work around the large file size cap.
@@ -207,9 +207,9 @@ split -d -n 10 resources/patterns.npz bin/part_
 
 ### Generating Recommendations
 
-The other somewhat expensive operation is generating suggestions after each round. While word frequency data can be accessed quickly, entropy requires taking per-row unique pattern counts, which isn't easily vectorizable in numpy. The initial entropy calculation takes about 40 seconds on my desktop. However, this is less of an issue as:
+The other somewhat expensive operation is generating suggestions after each round. While word frequency data can be accessed quickly, entropy requires taking per-row unique pattern counts, which isn't easily vectorizable in numpy. The initial entropy calculation takes about 40 seconds on my machine. However, this is less of an issue as:
 
-1. We already know the opening round entropies. They are stored in `resources/initial_data.csv`. See the later cells of `simulation.ipynb` for how this was generated.
+1. We already know the opening round entropies. They are pre-computed and stored in `resources/initial_data.csv`.
 2. The engine automatically opens with `tares` during simulations as it's the optimal opening guess with the highest entropy.
 3. As the possibilities space is pruned, calculating entropy takes much less time. The second pass usually takes under a second.
 

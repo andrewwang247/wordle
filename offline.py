@@ -4,14 +4,13 @@ Play offline games in user interactive mode.
 Copy right 2026. Andrew Wang.
 """
 # pylint: disable=no-value-for-parameter
-from sys import stdout
 import logging
 from click import command, option
 from cache import initialize_resources, log_initial_assistance
 from game import Game
 from engine import Engine
 
-logging.basicConfig(level=logging.INFO, stream=stdout)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
