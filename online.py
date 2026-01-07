@@ -4,7 +4,6 @@ Assist user in playing an online game.
 Copyright 2026. Andrew Wang.
 """
 # pylint: disable=no-value-for-parameter
-from sys import stdout
 import logging
 from click import command, option
 from constants import convert_squares
@@ -12,7 +11,7 @@ from cache import initialize_resources, log_initial_assistance
 from engine import Engine
 from game import Game
 
-logging.basicConfig(level=logging.INFO, stream=stdout)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
