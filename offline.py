@@ -7,8 +7,7 @@ Copy right 2026. Andrew Wang.
 from sys import stdout
 import logging
 from click import command, option
-from cache import initialize_resources
-from constants import BEST_FIRST_GUESS
+from cache import initialize_resources, log_initial_assistance
 from game import Game
 from engine import Engine
 
@@ -50,7 +49,7 @@ def main(assist: bool, solution: str, infolen: int):
     game.set_solution(solution)
 
     if assist:
-        logger.info('The optimal starting guess is %s', BEST_FIRST_GUESS)
+        log_initial_assistance(infolen)
     while not play_one_round(game, engine, assist, infolen):
         pass
 

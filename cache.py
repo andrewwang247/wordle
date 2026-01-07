@@ -10,6 +10,7 @@ from typing import Tuple
 from os import listdir, path
 from shutil import copyfileobj
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 from constants import wordle_compare
 from engine import Engine
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 _CHUNK_DIR = 'bin/'
 _DICTIONARY_FILE = 'resources/words.txt'
+_INITIAL_DATA_FILE = 'resources/initial_data.csv'
 _PATTERN_ARCHIVE_FILE = 'resources/patterns.npz'
 _PATTERN_CACHE_FILE = 'resources/patterns.npy'
 
@@ -92,3 +94,18 @@ def initialize_resources() -> Tuple[Game, Engine]:
     game = Game(words, patterns)
     engine = Engine(words, patterns)
     return game, engine
+
+
+def log_initial_assistance(infolen: int):
+    """Log cached opening guess assistance for player."""
+    df = pd.read_csv(_INITIAL_DATA_FILE, index_col='word')
+
+    # Attempt to match format of engine assistance.
+    df.index.set_names(None, inplace=True)
+    pos_df = df.sort_values(by='log_freq', ascending=False) \
+        .drop(columns=['entropy'])[:infolen]
+    logger.info('Likely solutions\n%s', pos_df)
+
+    gs_df = df.sort_values(by='entropy', ascending=False) \
+        .drop(columns=['log_freq'])[:infolen]
+    logger.info('Informative guesses\n%s', gs_df)

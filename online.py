@@ -7,8 +7,8 @@ Copyright 2026. Andrew Wang.
 from sys import stdout
 import logging
 from click import command, option
-from constants import convert_squares, BEST_FIRST_GUESS
-from cache import initialize_resources
+from constants import convert_squares
+from cache import initialize_resources, log_initial_assistance
 from engine import Engine
 from game import Game
 
@@ -40,7 +40,7 @@ def main(infolen: int):
     """Play Wordle with an unknown solution."""
     game, engine = initialize_resources()
     logger.info('Use "b", "y", "g" to denote squares color')
-    logger.info('The optimal starting guess is %s', BEST_FIRST_GUESS)
+    log_initial_assistance(infolen)
 
     while not play_one_round(game, engine, infolen):
         pass
