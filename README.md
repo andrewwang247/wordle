@@ -193,6 +193,18 @@ $ du -h bin/*
 18M   bin/part_09
 ```
 
+You can manually create the `.npz` archive from the partitions by running
+
+```bash
+cat bin/part_* resources/patterns.npz
+```
+
+Using an existing `.npz` archive, you can manually create the partitions by running
+
+```bash
+split -d -n 10 resources/patterns.npz bin/part_
+```
+
 ### Generating Recommendations
 
 The other somewhat expensive operation is generating suggestions after each round. While word frequency data can be accessed quickly, entropy requires taking per-row unique pattern counts, which isn't easily vectorizable in numpy. The initial entropy calculation takes about 40 seconds on my desktop. However, this is less of an issue as:
