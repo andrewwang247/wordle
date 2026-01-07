@@ -40,7 +40,7 @@ def play_one_round(
         help='Display frequency and entropy assistance to player.')
 @option('--solution', '-s', type=str, default=None,
         help='Provide a solution for the game. Random if not set.')
-@option('--infolen', '-i', type=int, default=10,
+@option('--infolen', '-l', type=int, default=10,
         help='If assisting, max # of suggestions to log per round.')
 def main(assist: bool, solution: str, infolen: int):
     """Play Wordle with a provided or random solution."""
@@ -51,7 +51,7 @@ def main(assist: bool, solution: str, infolen: int):
     game.set_solution(solution)
 
     if assist:
-        log_initial_assistance(infolen)
+        log_initial_assistance(infolen, False)
     while not play_one_round(game, engine, assist, infolen):
         pass
 

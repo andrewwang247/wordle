@@ -27,7 +27,7 @@ class Engine:
                  targets: Optional[npt.NDArray[np.str_]] = None):
         """Construct with ranker to help decide next guess."""
         self.words = words
-        self.patterns = patterns
+        self.targets = targets
         self.ranker = Ranker(words, patterns)
 
         logger.debug('Retrieving Zipf frequency for words')
@@ -76,17 +76,16 @@ class Engine:
                              index=guesses, columns=['entropy'])
         logger.info('Informative guesses\n%s', gs_df[:infolen])
 
-    def simulate(self, solution: str, targets:
-                 Optional[npt.NDArray[np.str_]] = None) -> Game:
+    def simulate(self, solution: str) -> Game:
         """Simulate playing with defined solution. Return constructed game."""
         self.reset()
         logger.info('Simulating engine game with solution %s', solution)
-        game = Game(self.words, self.patterns)
+        game = Game(self.words, self.ranker.patterns)
         game.set_solution(solution)
-        if targets is not None:
-            assert solution in targets, \
+        if self.targets is not None:
+            assert solution in self.targets, \
                 f'{solution} is not in provided targets sub-list'
-            self.ranker.manual_prune(targets)
+            self.ranker.manual_prune(self.targets)
         while True:
             guess = self._make_guess(game.current_round())
             squares, is_win = game.guess(guess)

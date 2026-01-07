@@ -35,7 +35,7 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
 @command()
 @option('--targeted', '-t', is_flag=True, default=False,
         help='Use known targets sub-list to prime engine.')
-@option('--infolen', '-i', type=int, default=10,
+@option('--infolen', '-l', type=int, default=10,
         help='Max # of suggestions to log per round.')
 def main(targeted: bool, infolen: int):
     """Play Wordle with an unknown solution."""
@@ -44,16 +44,13 @@ def main(targeted: bool, infolen: int):
     game = Game(words, patterns)
     engine = Engine(words, patterns, targets if targeted else None)
 
-    if targeted:
-        engine.log_assistance(infolen)
-    else:
-        log_initial_assistance(infolen)
+    log_initial_assistance(infolen, targeted)
     logger.info('Use "b", "y", "g" to denote squares color')
     while not play_one_round(game, engine, infolen):
         pass
 
     answer = game.guess_hist[-1]
-    engine.simulate(answer, targets if targeted else None)
+    engine.simulate(answer)
 
 
 if __name__ == '__main__':
