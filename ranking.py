@@ -6,13 +6,10 @@ Copyright 2026. Andrew Wang.
 import logging
 from math import log2
 from typing import Tuple
-from functools import partial
 from collections import Counter
 import numpy as np
 import pandas as pd
 from scipy.stats import entropy
-from wordfreq import zipf_frequency
-from constants import DEFAULT_LANGUAGE
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +34,6 @@ class Ranker:
         self.patterns = patterns  # (n, n)
         # Use masking to keep track of viable solutions
         self.reachable = np.ones_like(words, dtype=bool)
-        self.log_freq = np.vectorize(partial(
-            zipf_frequency, lang=DEFAULT_LANGUAGE), otypes=[float])
 
     def remaining_state(self) -> Tuple[int, float]:
         """Compute stats for the remaining reachable space."""
@@ -59,14 +54,6 @@ class Ranker:
         idx = self.index.get_loc(guess)
         squares_non_match = self.patterns[idx, :] != squares
         self.reachable[squares_non_match] = False
-
-    def likely_solutions(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Rank the most likely solutions based on word frequency."""
-        logger.debug('Sorting likely solutions by log likelihood')
-        possible = self.words[self.reachable]
-        frequencies = self.log_freq(possible)
-        sorted_idx = np.argsort(frequencies)[::-1]
-        return possible[sorted_idx], frequencies[sorted_idx]
 
     def informative_guesses(self) -> Tuple[np.ndarray, np.ndarray]:
         """Rank the probabilistic quality of guesses by entropy (in bits)."""

@@ -5,9 +5,11 @@ Copyright 2026. Andrew Wang.
 """
 import logging
 from typing import List
+from functools import partial
 import numpy as np
 import pandas as pd
-from constants import BEST_FIRST_GUESS
+from wordfreq import zipf_frequency
+from constants import BEST_FIRST_GUESS, DEFAULT_LANGUAGE
 from game import Game
 from ranking import Ranker
 
@@ -22,8 +24,16 @@ class Engine:
     def __init__(self, words: np.ndarray, patterns: np.ndarray,
                  cache_first_guess: bool = True):
         """Construct with ranker to help decide next guess."""
+        self.words = words
         self.ranker = Ranker(words, patterns)
         self.cache_first_guess = cache_first_guess
+        logger.debug('Retrieving Zipf frequency for words')
+        freq_vec = np.vectorize(partial(
+            zipf_frequency, lang=DEFAULT_LANGUAGE), otypes=[float])
+        self.log_freq = pd.DataFrame(
+            data=freq_vec(words),
+            index=pd.Index(words, name='possible'),
+            columns=['log_freq'])
 
         # Track the history of reachable counts and entropies
         reachable, uncertainty = self.ranker.remaining_state()
@@ -38,9 +48,9 @@ class Engine:
         remaining = np.sum(self.ranker.reachable)
         if remaining <= _STRATEGY_PHASE_SWITCH:
             logger.debug('Reached endgame. Choosing likely solution to win.')
-            solutions, _ = self.ranker.likely_solutions()
+            solutions = self.likely_solutions()
             assert solutions.size > 0, 'Could not find likely solutions.'
-            return solutions[0]
+            return solutions.index[0]
         logger.debug('Choosing highest entropy guess to prune state space.')
         guesses, _ = self.ranker.informative_guesses()
         assert guesses.size > 0, 'Could not find informative guesses.'
@@ -59,11 +69,15 @@ class Engine:
         self.reachable_hist.append(reachable)
         self.uncertainty_hist.append(uncertainty)
 
+    def likely_solutions(self) -> pd.DataFrame:
+        """Rank the most likely solutions based on word frequency."""
+        possible = self.ranker.still_reachable()
+        return self.log_freq.loc[possible] \
+            .sort_values(by='log_freq', ascending=False)
+
     def log_assistance(self, infolen: int):
         """Log ranked guesses and solutions to assist player."""
-        possible, freqs = self.ranker.likely_solutions()
-        pos_df = pd.DataFrame(index=pd.Index(possible, name='possible'),
-                              data=freqs, columns=['log_freq'])
+        pos_df = self.likely_solutions()
         logger.info('\n%s', pos_df[:infolen])
 
         guesses, entrops = self.ranker.informative_guesses()
