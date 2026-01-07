@@ -41,12 +41,12 @@ class Ranker:
             zipf_frequency, lang=DEFAULT_LANGUAGE), otypes=[float])
 
     def remaining_state(self) -> Tuple[int, float]:
-        """Compute the internal entropy of the reachable space."""
+        """Compute stats for the remaining reachable space."""
         total_reachable = np.sum(self.reachable)
         logger.info('Remaining possiblities: %d words', total_reachable)
-        space_bits = 0. if total_reachable == 0 else log2(total_reachable)
-        logger.info('Remaining entropy: %.2f bits', space_bits)
-        return total_reachable, space_bits
+        uncertainty = 0. if total_reachable == 0 else log2(total_reachable)
+        logger.info('Remaining uncertainty: %.2f bits', uncertainty)
+        return total_reachable, uncertainty
 
     def still_reachable(self) -> np.ndarray:
         """Get the remaining reachable words that remain."""

@@ -26,13 +26,13 @@ class Engine:
         self.cache_first_guess = cache_first_guess
 
         # Track the history of reachable counts and entropies
-        reachable, entropy = self.ranker.remaining_state()
+        reachable, uncertainty = self.ranker.remaining_state()
         self.reachable_hist: List[int] = [reachable]
-        self.entropy_hist: List[float] = [entropy]
+        self.uncertainty_hist: List[float] = [uncertainty]
 
-    def make_guess(self, round: int) -> str:
+    def make_guess(self, round_num: int) -> str:
         """Decide on the optimal next guess."""
-        if self.cache_first_guess and round == 0:
+        if self.cache_first_guess and round_num == 0:
             logger.debug('Using cached first guess %s', BEST_FIRST_GUESS)
             return BEST_FIRST_GUESS
         remaining = np.sum(self.ranker.reachable)
@@ -51,13 +51,13 @@ class Engine:
         assert len(guess) == len(squares), \
             f'Mismatch in guess {len(guess)} and square {len(squares)} lengths'
         self.ranker.update(guess, squares)
-        reachable, entropy = self.ranker.remaining_state()
+        reachable, uncertainty = self.ranker.remaining_state()
         logger.info('Reduced possibilities by %d words',
                     self.reachable_hist[-1] - reachable)
-        logger.info('Reduced entropy by %.2f bits',
-                    self.entropy_hist[-1] - entropy)
+        logger.info('Reduced uncertainty by %.2f bits',
+                    self.uncertainty_hist[-1] - uncertainty)
         self.reachable_hist.append(reachable)
-        self.entropy_hist.append(entropy)
+        self.uncertainty_hist.append(uncertainty)
 
     def log_assistance(self, infolen: int):
         """Log ranked guesses and solutions to assist player."""
@@ -89,6 +89,6 @@ class Engine:
         """Reset the internal state for a new game."""
         logger.debug('Resetting engine state')
         self.ranker.reset()
-        # Initial item in reachable and entropy history remains constant
+        # Initial item in reachable and uncertainty history remains constant
         self.reachable_hist = self.reachable_hist[:1]
-        self.entropy_hist = self.entropy_hist[:1]
+        self.uncertainty_hist = self.uncertainty_hist[:1]
