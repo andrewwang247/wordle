@@ -96,15 +96,21 @@ def load_patterns() -> npt.NDArray[np.str_]:
     return patterns
 
 
-def log_initial_assistance(infolen: int):
+def log_initial_assistance(infolen: int, targeted: bool):
     """Log cached opening guess assistance for player."""
     # Only runs once per session. Ok not to store.
     df = pd.read_csv(_INITIAL_DATA_FILE, index_col='word')
 
     # Attempt to match format of engine assistance.
     df.index.set_names(None, inplace=True)
-    pos_df = df.sort_values(by='log_freq', ascending=False)[:infolen]
-    logger.info('Likely solutions\n%s', pos_df.log_freq)
 
-    gs_df = df.sort_values(by='entropy', ascending=False)[:infolen]
-    logger.info('Informative guesses\n%s', gs_df.entropy)
+    pos_df = df.sort_values(by='log_freq', ascending=False)
+    if targeted:
+        pos_df = pos_df.dropna()
+    logger.info('Likely solutions\n%s',
+                pd.DataFrame(pos_df.log_freq)[:infolen])
+
+    key = 'entropy_targeted' if targeted else 'entropy'
+    gs_df = df.sort_values(by=key, ascending=False)
+    logger.info('Informative guesses\n%s',
+                pd.DataFrame(np.round(gs_df[key], 3))[:infolen])

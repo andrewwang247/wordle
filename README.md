@@ -18,7 +18,7 @@ Usage: offline.py [OPTIONS]
 Options:
   -a, --assist           Display frequency and entropy assistance to player.
   -s, --solution TEXT    Provide a solution for the game. Random if not set.
-  -i, --infolen INTEGER  If assisting, max # of suggestions to log per round.
+  -l, --infolen INTEGER  If assisting, max # of suggestions to log per round.
   --help                 Show this message and exit.
 ```
 
@@ -31,7 +31,7 @@ Usage: online.py [OPTIONS]
 
 Options:
   -t, --targeted         Use known targets sub-list to prime engine.
-  -i, --infolen INTEGER  Max # of suggestions to log per round.
+  -l, --infolen INTEGER  Max # of suggestions to log per round.
   --help                 Show this message and exit.
 ```
 
@@ -47,7 +47,7 @@ The engine helps the user by providing 2 sorted tables at each round.
 As an example, consider the first round of a game where you open with `hello` and the solution is `world`. You can expect to see:
 
 ```text
-$ python3 offline.py -a -s world -i 4
+$ python3 offline.py -a -s world -l 4
 INFO:ranking:Remaining possiblities: 14855 words
 INFO:ranking:Remaining uncertainty: 13.86 bits
 INFO:cache:Likely solutions
