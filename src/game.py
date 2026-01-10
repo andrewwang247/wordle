@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from constants import Square, SQUARE_VALUES
+from .constants import Square, SQUARE_VALUES
 
 logger = logging.getLogger(__name__)
 

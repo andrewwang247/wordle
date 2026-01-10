@@ -6,10 +6,7 @@ Copyright 2026. Andrew Wang.
 # pylint: disable=no-value-for-parameter
 import logging
 from click import command, option
-from constants import convert_squares
-from cache import load_words, load_patterns, log_initial_assistance
-from engine import Engine
-from game import Game
+from src import Engine, Game, cache, convert_squares
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -39,12 +36,12 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
         help='Max # of suggestions to log per round.')
 def main(targeted: bool, infolen: int):
     """Play Wordle with an unknown solution."""
-    words, targets = load_words()
-    patterns = load_patterns()
+    words, targets = cache.load_words()
+    patterns = cache.load_patterns()
     game = Game(words, patterns)
     engine = Engine(words, patterns, targets if targeted else None)
 
-    log_initial_assistance(infolen, targeted)
+    cache.log_initial_assistance(infolen, targeted)
     logger.info('Use "b", "y", "g" to denote squares color')
     while not play_one_round(game, engine, infolen):
         pass

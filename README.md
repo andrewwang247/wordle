@@ -173,9 +173,9 @@ Two operations that come up again and again are:
 1. Given a guess and a known solution, produce the square pattern, e.g. (`fjord`, `foods`) : 🟩⬛🟩⬛🟨
 2. Given a guess and a square pattern, determine if a possibility is compatible, e.g. (`fjords`, 🟩⬛🟩⬛🟨) is compatible with `foody`.
 
-Producing square patterns follows a procedure that is difficult to vectorize in numpy. If you're interested, see `wordle_compare` in `constants.py`. Since our dictionary is known ahead of time, we should not repeatedly compute these values at runtime. Instead, cache a square matrix *C* of dimension |*W*| where `C[i, j]` is the square pattern when guessing $w_i$ with solution $w_j$. This immediately solves the first operation with a simple index lookup. We can use it to solve the second operation by masking where the row `C[i, :]` is equal to the square pattern, i.e. `w[C[i, :] == s]` returns all compatibilities.
+Producing square patterns follows a procedure that is difficult to vectorize in numpy. If you're interested, see `wordle_compare` in `src/constants.py`. Since our dictionary is known ahead of time, we should not repeatedly compute these values at runtime. Instead, cache a square matrix *C* of dimension |*W*| where `C[i, j]` is the square pattern when guessing $w_i$ with solution $w_j$. This immediately solves the first operation with a simple index lookup. We can use it to solve the second operation by masking where the row `C[i, :]` is equal to the square pattern, i.e. `w[C[i, :] == s]` returns all compatibilities.
 
-This pre-compilation step takes around an hour on my machine. If you swap out the dictionary, use `compile_patterns` in `cache.py`. The resulting pattern matrix is cached at 2 levels.
+This pre-compilation step takes around an hour on my machine. If you swap out the dictionary, use `compile_patterns` in `src/cache.py`. The resulting pattern matrix is cached at 2 levels.
 
 1. Fast access stored in an uncompressed `.npy` binary file that is generated on access. Used by default and takes up a lot of space.
 2. Github storage in a compressed `.npz` zipped archive that is split across partitions in `bin/` to work around the large file size cap.

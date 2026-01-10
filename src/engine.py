@@ -10,9 +10,9 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 from wordfreq import zipf_frequency
-from constants import BEST_OPENER, BEST_TARGETED_OPENER
-from game import Game
-from ranking import Ranker
+from .constants import BEST_OPENER, BEST_TARGETED_OPENER
+from .game import Game
+from .ranking import Ranker
 
 logger = logging.getLogger(__name__)
 
