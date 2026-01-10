@@ -13,7 +13,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 from tqdm import tqdm
-from constants import wordle_compare
+from .constants import wordle_compare
 
 logger = logging.getLogger(__name__)
 
