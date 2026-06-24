@@ -5,7 +5,7 @@ Copyright 2026. Andrew Wang.
 """
 # pylint: disable=no-value-for-parameter
 import logging
-from click import command, option
+from click import command, IntRange, option
 from src import Engine, Game, cache, convert_squares
 
 logging.basicConfig(level=logging.INFO)
@@ -21,7 +21,8 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
 
         is_win = game.append(user_guess, squares)
         engine.feedback(user_guess, squares)
-        engine.log_assistance(infolen)
+        if infolen > 0:
+            engine.log_assistance(infolen)
         return is_win
     except AssertionError as err:
         # In case the user input is unrecognized
@@ -32,8 +33,8 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
 @command()
 @option('--targeted', '-t', is_flag=True, default=False,
         help='Use known targets sub-list to prime engine.')
-@option('--infolen', '-l', type=int, default=10,
-        help='Max # of suggestions to log per round.')
+@option('--infolen', '-l', type=IntRange(0, 10), default=5,
+        help='Max # of suggestions to log per round. 0 is no assistance.')
 def main(targeted: bool, infolen: int):
     """Play Wordle with an unknown solution."""
     words, targets = cache.load_words()
@@ -41,7 +42,8 @@ def main(targeted: bool, infolen: int):
     game = Game(words, patterns)
     engine = Engine(words, patterns, targets if targeted else None)
 
-    cache.log_initial_assistance(infolen, targeted)
+    if infolen > 0:
+        cache.log_initial_assistance(infolen, targeted)
     logger.info('Use "b", "y", "g" to denote squares color')
     while not play_one_round(game, engine, infolen):
         pass

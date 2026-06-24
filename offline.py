@@ -5,7 +5,7 @@ Copy right 2026. Andrew Wang.
 """
 # pylint: disable=no-value-for-parameter
 import logging
-from click import command, option
+from click import command, IntRange, option
 from src import Game, Engine, cache
 
 logging.basicConfig(level=logging.INFO)
@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 def play_one_round(
         game: Game,
         engine: Engine,
-        assist: bool,
         infolen: int) -> bool:
     """Play a single round. Returns whether player won."""
     try:
@@ -24,7 +23,7 @@ def play_one_round(
         if is_win:
             return True
         engine.feedback(user_guess, squares)
-        if assist:
+        if infolen > 0:
             engine.log_assistance(infolen)
         return False
     except AssertionError as err:
@@ -34,13 +33,11 @@ def play_one_round(
 
 
 @command()
-@option('--assist', '-a', is_flag=True, default=False,
-        help='Display frequency and entropy assistance to player.')
 @option('--solution', '-s', type=str, default=None,
         help='Provide a solution for the game. Random if not set.')
-@option('--infolen', '-l', type=int, default=10,
-        help='If assisting, max # of suggestions to log per round.')
-def main(assist: bool, solution: str, infolen: int):
+@option('--infolen', '-l', type=IntRange(0, 10), default=5,
+        help='Max # of suggestions to log per round. 0 is no assistance.')
+def main(solution: str, infolen: int):
     """Play Wordle with a provided or random solution."""
     words = cache.load_words()[0]
     patterns = cache.load_patterns()
@@ -48,9 +45,9 @@ def main(assist: bool, solution: str, infolen: int):
     engine = Engine(words, patterns)
     game.set_solution(solution)
 
-    if assist:
+    if infolen > 0:
         cache.log_initial_assistance(infolen, False)
-    while not play_one_round(game, engine, assist, infolen):
+    while not play_one_round(game, engine, infolen):
         pass
 
     logger.info('\n\nSimulated engine playthrough')

@@ -16,10 +16,11 @@ Usage: offline.py [OPTIONS]
   Play Wordle with a provided or random solution.
 
 Options:
-  -a, --assist           Display frequency and entropy assistance to player.
-  -s, --solution TEXT    Provide a solution for the game. Random if not set.
-  -l, --infolen INTEGER  If assisting, max # of suggestions to log per round.
-  --help                 Show this message and exit.
+  -s, --solution TEXT          Provide a solution for the game. Random if not
+                               set.
+  -l, --infolen INTEGER RANGE  Max # of suggestions to log per round. 0 is no
+                               assistance.  [0<=x<=10]
+  --help                       Show this message and exit.
 ```
 
 ### Online
@@ -30,9 +31,10 @@ Usage: online.py [OPTIONS]
   Play Wordle with an unknown solution.
 
 Options:
-  -t, --targeted         Use known targets sub-list to prime engine.
-  -l, --infolen INTEGER  Max # of suggestions to log per round.
-  --help                 Show this message and exit.
+  -t, --targeted               Use known targets sub-list to prime engine.
+  -l, --infolen INTEGER RANGE  Max # of suggestions to log per round. 0 is no
+                               assistance.  [0<=x<=10]
+  --help                       Show this message and exit.
 ```
 
 ## Engine Assistance
@@ -47,7 +49,7 @@ The engine helps the user by providing 2 sorted tables at each round.
 As an example, consider the first round of a game where you open with `hello` and the solution is `world`. You can expect to see:
 
 ```text
-$ python3 offline.py -a -s world -l 4
+$ python3 offline.py -s world -l 4
 INFO:ranking:Remaining possibilities: 14855 words
 INFO:ranking:Remaining uncertainty: 13.86 bits
 INFO:cache:Likely solutions
