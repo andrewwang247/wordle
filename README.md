@@ -50,34 +50,34 @@ As an example, consider the first round of a game where you open with `hello` an
 
 ```text
 $ python3 offline.py -s world -l 4
-INFO:ranking:Remaining possibilities: 14855 words
-INFO:ranking:Remaining uncertainty: 13.86 bits
-INFO:cache:Likely solutions
+INFO:src.ranking:Remaining possibilities: 14855 words
+INFO:src.ranking:Remaining uncertainty: 13.86 bits
+INFO:src.cache:Likely solutions
        log_freq
 about      6.40
 their      6.33
 there      6.31
 which      6.30
-INFO:cache:Informative guesses
-        entropy
-tares  6.159376
-lares  6.114794
-rales  6.096831
-rates  6.084062
+INFO:src.cache:Informative guesses
+       entropy
+tares    6.159
+lares    6.115
+rales    6.097
+rates    6.084
 
 Guess: hello
-INFO:game:Round 1: hello ⬛⬛⬛🟩🟨
-INFO:ranking:Remaining possibilities: 121 words
-INFO:ranking:Remaining uncertainty: 6.92 bits
-INFO:engine:Reduced possibilities by 14734 words
-INFO:engine:Reduced uncertainty by 6.94 bits
-INFO:engine:Likely solutions
+INFO:src.game:Round 1: hello ⬛⬛⬛🟩🟨
+INFO:src.ranking:Remaining possibilities: 121 words
+INFO:src.ranking:Remaining uncertainty: 6.92 bits
+INFO:src.engine:Reduced possibilities by 14734 words
+INFO:src.engine:Reduced uncertainty by 6.94 bits
+INFO:src.engine:Likely solutions
        log_freq
 would      6.27
 could      6.06
 world      5.89
 goals      4.95
-INFO:engine:Informative guesses
+INFO:src.engine:Informative guesses
        entropy
 sayid    4.401
 amids    4.357
