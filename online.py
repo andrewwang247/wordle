@@ -3,7 +3,7 @@ Assist user in playing an online game.
 
 Copyright 2026. Andrew Wang.
 """
-# pylint: disable=no-value-for-parameter
+# pylint: disable=no-value-for-parameter,duplicate-code
 import logging
 from click import command, IntRange, option
 from src import Engine, Game, cache, convert_squares
@@ -18,16 +18,13 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
         user_guess = input('\nGuess: ')
         user_response = input('Squares: ')
         squares = convert_squares(user_response)
-
-        is_win = game.append(user_guess, squares)
+        if game.append_is_win(user_guess, squares):
+            return True
         engine.feedback(user_guess, squares)
-        if infolen > 0:
-            engine.log_assistance(infolen)
-        return is_win
+        engine.log_assistance(infolen)
     except AssertionError as err:
-        # In case the user input is unrecognized
         logger.warning(err)
-        return False
+    return False
 
 
 @command()
@@ -49,6 +46,7 @@ def main(targeted: bool, infolen: int):
         pass
 
     answer = game.guess_hist[-1]
+    assert answer is not None, 'Game solution should not be None'
     engine.simulate(answer)
 
 

@@ -3,7 +3,7 @@ Play offline games in user interactive mode.
 
 Copy right 2026. Andrew Wang.
 """
-# pylint: disable=no-value-for-parameter
+# pylint: disable=no-value-for-parameter,duplicate-code
 import logging
 from click import command, IntRange, option
 from src import Game, Engine, cache
@@ -19,17 +19,14 @@ def play_one_round(
     """Play a single round. Returns whether player won."""
     try:
         user_guess = input('\nGuess: ')
-        squares, is_win = game.guess(user_guess)
+        squares, is_win = game.guess_is_win(user_guess)
         if is_win:
             return True
         engine.feedback(user_guess, squares)
-        if infolen > 0:
-            engine.log_assistance(infolen)
-        return False
+        engine.log_assistance(infolen)
     except AssertionError as err:
-        # In case the user input is unrecognized
         logger.warning(err)
-        return False
+    return False
 
 
 @command()
@@ -50,7 +47,6 @@ def main(solution: str, infolen: int):
     while not play_one_round(game, engine, infolen):
         pass
 
-    logger.info('\n\nSimulated engine playthrough')
     answer = game.solution
     assert answer is not None, 'Game solution should not be None'
     engine.simulate(answer)

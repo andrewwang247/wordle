@@ -49,28 +49,38 @@ class Game:
         """Return the current round number."""
         return len(self.guess_hist)
 
-    def append(self, word: str, squares: str) -> bool:
+    def append_is_win(self, word: str, squares: str) -> bool:
         """Process a guess and response. Return if this is a win."""
         assert word in self.index, f'{word} is not in dictionary.'
+        assert len(word) == len(squares), \
+            f'Mismatched lengths: guess {len(word)} and square {len(squares)}'
         assert all(sq in SQUARE_VALUES for sq in squares), \
             f'{squares} is an invalid square string'
         self.guess_hist.append(word)
         self.square_hist.append(squares)
+        round_number = self.current_round()
         logger.info(
             'Round %d: %s %s',
-            self.current_round(),
+            round_number,
             word,
             squares)
-        return all(sq == Square.GREEN.value for sq in squares)
+        is_win = all(sq == Square.GREEN.value for sq in squares)
+        if not is_win:
+            return False
+        if self.solution is not None:
+            assert word == self.solution, \
+                f'Word {word} does not match solution {self.solution}.'
+        logger.info(
+            'Completed game in %d round%s',
+            round_number,
+            '' if round_number == 1 else 's')
+        return True
 
-    def guess(self, word: str) -> Tuple[str, bool]:
+    def guess_is_win(self, word: str) -> Tuple[str, bool]:
         """Process a guess and return the square combo + win state."""
         assert self.solution is not None, 'Solution was not set.'
         assert word in self.index, f'{word} is not in dictionary.'
         gs_idx = self.index.get_loc(word)
         result = str(self.patterns[gs_idx, self.sol_idx])
-        self.append(word, result)
-        is_win = word == self.solution
-        if is_win:
-            logger.info('Completed game in %d rounds', self.current_round())
+        is_win = self.append_is_win(word, result)
         return result, is_win

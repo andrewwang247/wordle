@@ -51,7 +51,7 @@ class Engine:
     def feedback(self, guess: str, squares: str):
         """Update internal state with guess and squares result."""
         assert len(guess) == len(squares), \
-            f'Mismatch in guess {len(guess)} and square {len(squares)} lengths'
+            f'Mismatched lengths: guess {len(guess)} and square {len(squares)}'
         self.ranker.update(guess, squares)
         reachable, uncertainty = self.ranker.remaining_state()
         logger.info('Reduced possibilities by %d words',
@@ -69,6 +69,9 @@ class Engine:
 
     def log_assistance(self, infolen: int):
         """Log ranked guesses and solutions to assist player."""
+        if infolen <= 0:
+            logger.debug('Infolen %d <= 0. Skip logging assistance.', infolen)
+            return
         pos_df = self.likely_solutions()
         logger.info('Likely solutions\n%s', pos_df[:infolen])
         guesses, entrops = self.ranker.informative_guesses()
@@ -79,7 +82,9 @@ class Engine:
     def simulate(self, solution: str) -> Game:
         """Simulate playing with defined solution. Return constructed game."""
         self.reset()
-        logger.info('Simulating engine game with solution %s', solution)
+        announcement = 'Simulating engine game with solution'
+        logger.info('=' * (len(announcement) + 1 + len(solution)))
+        logger.info('%s %s', announcement, solution)
         game = Game(self.words, self.ranker.patterns)
         game.set_solution(solution)
         if self.targets is not None:
@@ -88,7 +93,7 @@ class Engine:
             self.ranker.manual_prune(self.targets)
         while True:
             guess = self._make_guess(game.current_round())
-            squares, is_win = game.guess(guess)
+            squares, is_win = game.guess_is_win(guess)
             if is_win:
                 break
             self.feedback(guess, squares)
