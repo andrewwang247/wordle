@@ -6,7 +6,7 @@ Precompute square responses for all pairings.
 Copyright 2026. Andrew Wang.
 """
 import logging
-from typing import Tuple
+from typing import cast, Tuple
 from os import listdir, path
 from shutil import copyfileobj
 import numpy as np
@@ -47,7 +47,7 @@ def load_words() -> Tuple[npt.NDArray[np.str_], npt.NDArray[np.str_]]:
     return words, targets
 
 
-def compile_patterns():
+def compile_patterns() -> None:
     """
     Compile and cache pattern combinations for every pairing.
 
@@ -71,7 +71,7 @@ def load_patterns() -> npt.NDArray[np.str_]:
     """Load already compiled patterns (n, n) from archive."""
     if path.exists(_PATTERN_CACHE_FILE):
         logger.debug('Loading pre-compiled cache %s', _PATTERN_CACHE_FILE)
-        return np.load(_PATTERN_CACHE_FILE)
+        return cast(npt.NDArray[np.str_], np.load(_PATTERN_CACHE_FILE))
     logger.debug('No pattern cache %s found', _PATTERN_CACHE_FILE)
 
     if not path.exists(_PATTERN_ARCHIVE_FILE):
@@ -90,13 +90,14 @@ def load_patterns() -> npt.NDArray[np.str_]:
                     copyfileobj(fsrc, fdst)
 
     logger.debug('Loading pre-compiled archive %s', _PATTERN_ARCHIVE_FILE)
-    patterns = np.load(_PATTERN_ARCHIVE_FILE)['arr_0']
+    patterns = cast(npt.NDArray[np.str_],
+                    np.load(_PATTERN_ARCHIVE_FILE)['arr_0'])
     logger.debug('Writing patterns to cache %s', _PATTERN_CACHE_FILE)
     np.save(_PATTERN_CACHE_FILE, patterns)
     return patterns
 
 
-def log_initial_assistance(infolen: int, targeted: bool):
+def log_initial_assistance(infolen: int, targeted: bool) -> None:
     """Log cached opening guess assistance for player."""
     # Only runs once per session. Ok not to store.
     df = pd.read_csv(_INITIAL_DATA_FILE, index_col='word')

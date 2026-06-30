@@ -21,4 +21,4 @@ printf "\nRunning pydocstyle...\n\n"
 pydocstyle $pyfiles
 
 printf "\nRunning mypy...\n\n"
-mypy --check-untyped-defs $pyfiles
+mypy --strict $pyfiles

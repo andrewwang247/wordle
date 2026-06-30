@@ -15,7 +15,7 @@ from scipy.stats import entropy
 logger = logging.getLogger(__name__)
 
 
-def _unroll_counts(row: npt.NDArray[np.str_]):
+def _unroll_counts(row: npt.NDArray[np.str_]) -> npt.NDArray[np.int_]:
     """Convert a row into unique counts with zero padding."""
     unique_counts = np.array(list(Counter(row).values()), dtype=int)
     # Pad all to same length so we can apply along axis.
@@ -45,7 +45,7 @@ class Ranker:
         logger.info('Remaining uncertainty: %.2f bits', uncertainty)
         return total_reachable, uncertainty
 
-    def update(self, guess: str, squares: str):
+    def update(self, guess: str, squares: str) -> None:
         """Update internal state with guess and squares result."""
         assert guess in self.index, f'{guess} is not in dictionary.'
         logger.debug('Updating internal state with new information')
@@ -65,13 +65,13 @@ class Ranker:
         sorted_idx = np.argsort(entropies)[::-1]
         return self.words[sorted_idx], entropies[sorted_idx]
 
-    def manual_prune(self, targets: npt.NDArray[np.str_]):
+    def manual_prune(self, targets: npt.NDArray[np.str_]) -> None:
         """Mark all targets as not reachable."""
         logger.debug('Marking all target as unreachable')
         mask = np.isin(self.words, targets)
         self.reachable[~mask] = False
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the internal state to a clean slate."""
         logger.debug('Resetting ranker state')
         self.reachable = np.ones_like(self.words, dtype=bool)
