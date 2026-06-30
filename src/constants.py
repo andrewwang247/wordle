@@ -39,7 +39,8 @@ def convert_squares(user_str: str) -> str:
 
 
 def wordle_compare(guess: str, answer: str,
-                   pbar: Optional[tqdm] = None) -> str:
+                   pbar: Optional[tqdm] = None  # type: ignore
+                   ) -> str:
     """
     Given a guess and an answer, generate the squares pattern.
 

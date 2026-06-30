@@ -29,7 +29,7 @@ class Game:
         self.guess_hist: List[str] = []
         self.square_hist: List[str] = []
 
-    def set_solution(self, solution: Optional[str] = None):
+    def set_solution(self, solution: Optional[str] = None) -> None:
         """Initialize game with a given (or random) solution."""
         if solution is None:
             self.solution = np.random.choice(self.index)

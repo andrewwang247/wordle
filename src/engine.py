@@ -4,7 +4,7 @@ Wordle game engine that plays optimally.
 Copyright 2026. Andrew Wang.
 """
 import logging
-from typing import List, Optional
+from typing import cast, List, Optional
 from functools import partial
 import numpy as np
 import numpy.typing as npt
@@ -48,7 +48,7 @@ class Engine:
         self.reachable_hist: List[int] = [reachable]
         self.uncertainty_hist: List[float] = [uncertainty]
 
-    def feedback(self, guess: str, squares: str):
+    def feedback(self, guess: str, squares: str) -> None:
         """Update internal state with guess and squares result."""
         assert len(guess) == len(squares), \
             f'Mismatched lengths: guess {len(guess)} and square {len(squares)}'
@@ -67,7 +67,7 @@ class Engine:
         subset: pd.DataFrame = self.log_freq.loc[possible]  # type: ignore
         return subset.sort_values(by='log_freq', ascending=False)
 
-    def log_assistance(self, infolen: int):
+    def log_assistance(self, infolen: int) -> None:
         """Log ranked guesses and solutions to assist player."""
         if infolen <= 0:
             logger.debug('Infolen %d <= 0. Skip logging assistance.', infolen)
@@ -99,7 +99,7 @@ class Engine:
             self.feedback(guess, squares)
         return game
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the internal state for a new game."""
         logger.debug('Resetting engine state')
         self.ranker.reset()
@@ -117,8 +117,8 @@ class Engine:
             logger.debug('Reached endgame. Choosing likely solution to win.')
             solutions = self.likely_solutions()
             assert solutions.size > 0, 'Could not find likely solutions.'
-            return solutions.index[0]
+            return cast(str, solutions.index[0])
         logger.debug('Choosing highest entropy guess to prune state space.')
         guesses = self.ranker.informative_guesses()[0]
         assert guesses.size > 0, 'Could not find informative guesses.'
-        return guesses[0]
+        return cast(str, guesses[0])

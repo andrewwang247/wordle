@@ -32,7 +32,7 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
         help='Use known targets sub-list to prime engine.')
 @option('--infolen', '-l', type=IntRange(0, 10), default=5,
         help='Max # of suggestions to log per round. 0 is no assistance.')
-def main(targeted: bool, infolen: int):
+def main(targeted: bool, infolen: int) -> None:
     """Play Wordle with an unknown solution."""
     words, targets = cache.load_words()
     patterns = cache.load_patterns()

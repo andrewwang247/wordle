@@ -34,7 +34,7 @@ def play_one_round(
         help='Provide a solution for the game. Random if not set.')
 @option('--infolen', '-l', type=IntRange(0, 10), default=5,
         help='Max # of suggestions to log per round. 0 is no assistance.')
-def main(solution: str, infolen: int):
+def main(solution: str, infolen: int) -> None:
     """Play Wordle with a provided or random solution."""
     words = cache.load_words()[0]
     patterns = cache.load_patterns()
