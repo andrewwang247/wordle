@@ -30,7 +30,7 @@ class Engine:
         self.targets = targets
         self.ranker = Ranker(words, patterns)
 
-        logger.debug('Retrieving Zipf frequency for words')
+        logger.info('Retrieving Zipf frequency for words')
         freq_vec = np.vectorize(partial(
             zipf_frequency, lang='en'), otypes=[float])
         self.log_freq = pd.DataFrame(
@@ -54,10 +54,10 @@ class Engine:
             f'Mismatched lengths: guess {len(guess)} and square {len(squares)}'
         self.ranker.update(guess, squares)
         reachable, uncertainty = self.ranker.remaining_state()
-        logger.info('Reduced possibilities by %d words',
-                    self.reachable_hist[-1] - reachable)
-        logger.info('Reduced uncertainty by %.2f bits',
-                    self.uncertainty_hist[-1] - uncertainty)
+        possibilities_reduction = self.reachable_hist[-1] - reachable
+        print(f'Reduced possibilities by {possibilities_reduction} words')
+        uncertainty_reduction = self.uncertainty_hist[-1] - uncertainty
+        print(f'Reduced uncertainty by {uncertainty_reduction:.2f} bits')
         self.reachable_hist.append(reachable)
         self.uncertainty_hist.append(uncertainty)
 
@@ -70,21 +70,23 @@ class Engine:
     def log_assistance(self, infolen: int) -> None:
         """Log ranked guesses and solutions to assist player."""
         if infolen <= 0:
-            logger.debug('Infolen %d <= 0. Skip logging assistance.', infolen)
+            logger.info('Infolen %d <= 0. Skip logging assistance.', infolen)
             return
         pos_df = self.likely_solutions()
-        logger.info('Likely solutions\n%s', pos_df[:infolen])
+        print('Likely solutions')
+        print(pos_df[:infolen])
         guesses, entrops = self.ranker.informative_guesses()
         gs_df = pd.DataFrame(data=np.round(entrops, 3),
                              index=guesses, columns=['entropy'])
-        logger.info('Informative guesses\n%s', gs_df[:infolen])
+        print('Informative guesses')
+        print(gs_df[:infolen])
 
     def simulate(self, solution: str) -> Game:
         """Simulate playing with defined solution. Return constructed game."""
         self.reset()
         announcement = 'Simulating engine game with solution'
-        logger.info('=' * (len(announcement) + 1 + len(solution)))
-        logger.info('%s %s', announcement, solution)
+        print('=' * (len(announcement) + 1 + len(solution)))
+        print(f'{announcement} {solution}')
         game = Game(self.words, self.ranker.patterns)
         game.set_solution(solution)
         if self.targets is not None:
@@ -101,7 +103,7 @@ class Engine:
 
     def reset(self) -> None:
         """Reset the internal state for a new game."""
-        logger.debug('Resetting engine state')
+        logger.info('Resetting engine state')
         self.ranker.reset()
         # Initial item in reachable and uncertainty history remains constant
         self.reachable_hist = self.reachable_hist[:1]
@@ -110,15 +112,15 @@ class Engine:
     def _make_guess(self, round_num: int) -> str:
         """Decide on the optimal next guess."""
         if round_num == 0:
-            logger.debug('Using cached opener to speed things up.')
+            logger.info('Using cached opener to speed things up.')
             return self.cached_opener
         remaining = np.sum(self.ranker.reachable)
         if remaining <= _STRATEGY_PHASE_SWITCH:
-            logger.debug('Reached endgame. Choosing likely solution to win.')
+            logger.info('Reached endgame. Choosing likely solution to win.')
             solutions = self.likely_solutions()
             assert solutions.size > 0, 'Could not find likely solutions.'
             return cast(str, solutions.index[0])
-        logger.debug('Choosing highest entropy guess to prune state space.')
+        logger.info('Choosing highest entropy guess to prune state space.')
         guesses = self.ranker.informative_guesses()[0]
         assert guesses.size > 0, 'Could not find informative guesses.'
         return cast(str, guesses[0])

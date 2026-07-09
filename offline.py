@@ -8,7 +8,6 @@ import logging
 from click import command, IntRange, option
 from src import Game, Engine, cache
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -34,8 +33,11 @@ def play_one_round(
         help='Provide a solution for the game. Random if not set.')
 @option('--infolen', '-l', type=IntRange(0, 10), default=5,
         help='Max # of suggestions to log per round. 0 is no assistance.')
-def main(solution: str, infolen: int) -> None:
+@option('--verbose', '-v', is_flag=True, default=False,
+        help='Displays application logs if set.')
+def main(solution: str, infolen: int, verbose: bool) -> None:
     """Play Wordle with a provided or random solution."""
+    logging.basicConfig(level=logging.INFO if verbose else logging.WARN)
     words = cache.load_words()[0]
     patterns = cache.load_patterns()
     game = Game(words, patterns)

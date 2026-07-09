@@ -20,6 +20,7 @@ Options:
                                set.
   -l, --infolen INTEGER RANGE  Max # of suggestions to log per round. 0 is no
                                assistance.  [0<=x<=10]
+  -v, --verbose                Displays application logs if set.
   --help                       Show this message and exit.
 ```
 
@@ -34,6 +35,7 @@ Options:
   -t, --targeted               Use known targets sub-list to prime engine.
   -l, --infolen INTEGER RANGE  Max # of suggestions to log per round. 0 is no
                                assistance.  [0<=x<=10]
+  -v, --verbose                Displays application logs if set.
   --help                       Show this message and exit.
 ```
 
@@ -50,15 +52,15 @@ As an example, consider the first round of a game where you open with `hello` an
 
 ```text
 $ python3 offline.py -s world -l 4
-INFO:src.ranking:Remaining possibilities: 14855 words
-INFO:src.ranking:Remaining uncertainty: 13.86 bits
-INFO:src.cache:Likely solutions
+Remaining possibilities: 14855 words
+Remaining uncertainty: 13.86 bits
+Likely solutions
        log_freq
 about      6.40
 their      6.33
 there      6.31
 which      6.30
-INFO:src.cache:Informative guesses
+Informative guesses
        entropy
 tares    6.159
 lares    6.115
@@ -66,18 +68,18 @@ rales    6.097
 rates    6.084
 
 Guess: hello
-INFO:src.game:Round 1: hello ⬛⬛⬛🟩🟨
-INFO:src.ranking:Remaining possibilities: 121 words
-INFO:src.ranking:Remaining uncertainty: 6.92 bits
-INFO:src.engine:Reduced possibilities by 14734 words
-INFO:src.engine:Reduced uncertainty by 6.94 bits
-INFO:src.engine:Likely solutions
+Round 1: hello ⬛⬛⬛🟩🟨
+Remaining possibilities: 121 words
+Remaining uncertainty: 6.92 bits
+Reduced possibilities by 14734 words
+Reduced uncertainty by 6.94 bits
+Likely solutions
        log_freq
 would      6.27
 could      6.06
 world      5.89
 goals      4.95
-INFO:src.engine:Informative guesses
+Informative guesses
        entropy
 sayid    4.401
 amids    4.357
