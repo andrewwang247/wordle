@@ -40,15 +40,15 @@ class Ranker:
     def remaining_state(self) -> Tuple[int, float]:
         """Compute stats for the remaining reachable space."""
         total_reachable: int = np.sum(self.reachable)  # type: ignore
-        logger.info('Remaining possibilities: %d words', total_reachable)
+        print(f'Remaining possibilities: {total_reachable} words')
         uncertainty = 0. if total_reachable == 0 else log2(total_reachable)
-        logger.info('Remaining uncertainty: %.2f bits', uncertainty)
+        print(f'Remaining uncertainty: {uncertainty:.2f} bits')
         return total_reachable, uncertainty
 
     def update(self, guess: str, squares: str) -> None:
         """Update internal state with guess and squares result."""
         assert guess in self.index, f'{guess} is not in dictionary.'
-        logger.debug('Updating internal state with new information')
+        logger.info('Updating internal state with new information')
         idx = self.index.get_loc(guess)
         squares_non_match = self.patterns[idx, :] != squares
         self.reachable[squares_non_match] = False
@@ -57,7 +57,7 @@ class Ranker:
             Tuple[npt.NDArray[np.str_], npt.NDArray[np.float64]]:
         """Rank the probabilistic quality of guesses by entropy (in bits)."""
         # All guesses (axis 0) are included. Exclude unreachable candidates.
-        logger.debug('Sorting informative guesses by entropy')
+        logger.info('Sorting informative guesses by entropy')
         working_set = self.patterns[:, self.reachable]
         counts = np.apply_along_axis(_unroll_counts, 1, working_set)
         entropies: npt.NDArray[np.float64] \
@@ -67,11 +67,11 @@ class Ranker:
 
     def manual_prune(self, targets: npt.NDArray[np.str_]) -> None:
         """Mark all targets as not reachable."""
-        logger.debug('Marking all target as unreachable')
+        logger.info('Marking all target as unreachable')
         mask = np.isin(self.words, targets)
         self.reachable[~mask] = False
 
     def reset(self) -> None:
         """Reset the internal state to a clean slate."""
-        logger.debug('Resetting ranker state')
+        logger.info('Resetting ranker state')
         self.reachable = np.ones_like(self.words, dtype=bool)

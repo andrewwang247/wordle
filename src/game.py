@@ -43,7 +43,7 @@ class Game:
         assert isinstance(solution_index, int), \
             f'Unexpected type {type(solution_index)} from pandas index'
         self.sol_idx = solution_index
-        logger.debug('Initialized game with solution %s', self.solution)
+        logger.info('Initialized game with solution %s', self.solution)
 
     def current_round(self) -> int:
         """Return the current round number."""
@@ -59,21 +59,14 @@ class Game:
         self.guess_hist.append(word)
         self.square_hist.append(squares)
         round_number = self.current_round()
-        logger.info(
-            'Round %d: %s %s',
-            round_number,
-            word,
-            squares)
+        print(f'Round {round_number}: {word} {squares}')
         is_win = all(sq == Square.GREEN.value for sq in squares)
         if not is_win:
             return False
         if self.solution is not None:
             assert word == self.solution, \
                 f'Word {word} does not match solution {self.solution}.'
-        logger.info(
-            'Completed game in %d round%s',
-            round_number,
-            '' if round_number == 1 else 's')
+        print(f'Completed game in {round_number} rounds')
         return True
 
     def guess_is_win(self, word: str) -> Tuple[str, bool]:
