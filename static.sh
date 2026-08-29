@@ -8,17 +8,17 @@ set -uo pipefail
 # List of all Python files.
 pyfiles=$(find . -name "*.py" -type f -not -path "./env/*");
 
-printf "Running autopep...\n\n"
+printf "Running autopep...\n"
 autopep8 -i -a -a $pyfiles
 
-printf "Running pylint...\n\n"
+printf "Running pylint...\n"
 pylint $pyfiles
 
-printf "Running pycodestyle...\n\n"
+printf "Running pycodestyle...\n"
 pycodestyle $pyfiles
 
-printf "\nRunning pydocstyle...\n\n"
+printf "Running pydocstyle...\n"
 pydocstyle $pyfiles
 
-printf "\nRunning mypy...\n\n"
+printf "Running mypy...\n"
 mypy --strict $pyfiles
