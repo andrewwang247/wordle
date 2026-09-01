@@ -1,56 +1,60 @@
-"""
-Basic Wordle square enumeration and comparisons.
+"""Basic Wordle square enumeration and comparisons.
 
 Copyright 2026. Andrew Wang.
 """
-from typing import Optional
+
 from enum import Enum
+from typing import TYPE_CHECKING, Any
+
 import numpy as np
-from tqdm import tqdm
+
+if TYPE_CHECKING:
+    from tqdm import tqdm
 
 
 class Square(Enum):
     """Define square colors and their unicode representation."""
 
-    BLACK = '\U00002B1B'
-    YELLOW = '\U0001F7E8'
-    GREEN = '\U0001F7E9'
+    BLACK = "\U00002b1b"
+    YELLOW = "\U0001f7e8"
+    GREEN = "\U0001f7e9"
 
 
 SQUARE_VALUES = {item.value for item in Square}
 
-BEST_OPENER = 'tares'
-BEST_TARGETED_OPENER = 'tarse'
+BEST_OPENER = "tares"
+BEST_TARGETED_OPENER = "tarse"
 
 
 def convert_squares(user_str: str) -> str:
     """Convert convenience string of b, y, and g into squares."""
     values = []
     for letter in user_str:
-        assert letter in ('b', 'y', 'g'), \
-            f'Unrecognized character {letter} in squares string'
-        if letter == 'b':
+        assert letter in ("b", "y", "g"), (
+            f"Unrecognized character {letter} in squares string"
+        )
+        if letter == "b":
             values.append(Square.BLACK.value)
-        elif letter == 'y':
+        elif letter == "y":
             values.append(Square.YELLOW.value)
         else:
             values.append(Square.GREEN.value)
-    return ''.join(values)
+    return "".join(values)
 
 
-def wordle_compare(guess: str, answer: str,
-                   pbar: Optional[tqdm] = None  # type: ignore
-                   ) -> str:
-    """
-    Given a guess and an answer, generate the squares pattern.
+def wordle_compare(
+    guess: str,
+    answer: str,
+    pbar: tqdm[Any] | None = None,
+) -> str:
+    """Given a guess and an answer, generate the squares pattern.
 
     This runs in a very tight vectorized loop during compilation.
     """
-    assert len(guess) == len(answer), \
-        'Guess and answer must have matching lengths'
-    guess_np = np.array(list(guess), dtype='<1U')
-    answer_np = np.array(list(answer), dtype='<1U')
-    squares = np.full_like(guess_np, Square.BLACK.value, dtype='<1U')
+    assert len(guess) == len(answer), "Guess and answer must have matching lengths"
+    guess_np = np.array(list(guess), dtype="<1U")
+    answer_np = np.array(list(answer), dtype="<1U")
+    squares = np.full_like(guess_np, Square.BLACK.value, dtype="<1U")
 
     # Green is the easiest case to handle by position.
     # The mask gm is used to remove them in further processing.
@@ -73,4 +77,4 @@ def wordle_compare(guess: str, answer: str,
 
     if pbar:
         pbar.update(1)
-    return ''.join(squares)
+    return "".join(squares)
