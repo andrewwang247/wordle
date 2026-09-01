@@ -1,12 +1,12 @@
-"""
-Rank solutions with log frequency and guesses with entropy.
+"""Rank solutions with log frequency and guesses with entropy.
 
 Copyright 2026. Andrew Wang.
 """
+
 import logging
-from math import log2
-from typing import Tuple
 from collections import Counter
+from math import log2
+
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -27,8 +27,11 @@ def _unroll_counts(row: npt.NDArray[np.str_]) -> npt.NDArray[np.int_]:
 class Ranker:
     """Stateful ranking that iteratively updates on new data."""
 
-    def __init__(self, words: npt.NDArray[np.str_],
-                 patterns: npt.NDArray[np.str_]):
+    def __init__(
+        self,
+        words: npt.NDArray[np.str_],
+        patterns: npt.NDArray[np.str_],
+    ) -> None:
         """Construct with references to immutable data."""
         self.words = words  # (n,)
         # Fast way to index given a word.
@@ -37,41 +40,41 @@ class Ranker:
         # Use masking to keep track of viable solutions
         self.reachable: npt.NDArray[np.bool_] = np.ones_like(words, dtype=bool)
 
-    def remaining_state(self) -> Tuple[int, float]:
+    def remaining_state(self) -> tuple[np.int_, float]:
         """Compute stats for the remaining reachable space."""
-        total_reachable: int = np.sum(self.reachable)  # type: ignore
-        print(f'Remaining possibilities: {total_reachable} words')
-        uncertainty = 0. if total_reachable == 0 else log2(total_reachable)
-        print(f'Remaining uncertainty: {uncertainty:.2f} bits')
+        total_reachable = np.sum(self.reachable)
+        print(f"Remaining possibilities: {total_reachable} words")
+        uncertainty = 0.0 if total_reachable == 0 else log2(total_reachable)
+        print(f"Remaining uncertainty: {uncertainty:.2f} bits")
         return total_reachable, uncertainty
 
     def update(self, guess: str, squares: str) -> None:
         """Update internal state with guess and squares result."""
-        assert guess in self.index, f'{guess} is not in dictionary.'
-        logger.info('Updating internal state with new information')
+        assert guess in self.index, f"{guess} is not in dictionary."
+        logger.info("Updating internal state with new information")
         idx = self.index.get_loc(guess)
         squares_non_match = self.patterns[idx, :] != squares
         self.reachable[squares_non_match] = False
 
-    def informative_guesses(self) -> \
-            Tuple[npt.NDArray[np.str_], npt.NDArray[np.float64]]:
+    def informative_guesses(
+        self,
+    ) -> tuple[npt.NDArray[np.str_], npt.NDArray[np.float64]]:
         """Rank the probabilistic quality of guesses by entropy (in bits)."""
         # All guesses (axis 0) are included. Exclude unreachable candidates.
-        logger.info('Sorting informative guesses by entropy')
+        logger.info("Sorting informative guesses by entropy")
         working_set = self.patterns[:, self.reachable]
         counts = np.apply_along_axis(_unroll_counts, 1, working_set)
-        entropies: npt.NDArray[np.float64] \
-            = entropy(counts, axis=1, base=2)  # type: ignore
+        entropies: npt.NDArray[np.float64] = entropy(counts, axis=1, base=2)  # type: ignore[assignment]
         sorted_idx = np.argsort(entropies)[::-1]
         return self.words[sorted_idx], entropies[sorted_idx]
 
     def manual_prune(self, targets: npt.NDArray[np.str_]) -> None:
         """Mark all targets as not reachable."""
-        logger.info('Marking all target as unreachable')
+        logger.info("Marking all target as unreachable")
         mask = np.isin(self.words, targets)
         self.reachable[~mask] = False
 
     def reset(self) -> None:
         """Reset the internal state to a clean slate."""
-        logger.info('Resetting ranker state')
+        logger.info("Resetting ranker state")
         self.reachable = np.ones_like(self.words, dtype=bool)

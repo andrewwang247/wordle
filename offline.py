@@ -1,23 +1,22 @@
-"""
-Play offline games in user interactive mode.
+"""Play offline games in user interactive mode.
 
-Copy right 2026. Andrew Wang.
+Copyright 2026. Andrew Wang.
 """
+
 # pylint: disable=no-value-for-parameter,duplicate-code
 import logging
-from click import command, IntRange, option
-from src import Game, Engine, cache
+
+from click import IntRange, command, option
+
+from src import Engine, Game, cache
 
 logger = logging.getLogger(__name__)
 
 
-def play_one_round(
-        game: Game,
-        engine: Engine,
-        infolen: int) -> bool:
+def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
     """Play a single round. Returns whether player won."""
     try:
-        user_guess = input('\nGuess: ')
+        user_guess = input("\nGuess: ")
         squares, is_win = game.guess_is_win(user_guess)
         if is_win:
             return True
@@ -29,15 +28,30 @@ def play_one_round(
 
 
 @command()
-@option('--solution', '-s', type=str, default=None,
-        help='Provide a solution for the game. Random if not set.')
-@option('--infolen', '-l', type=IntRange(0, 10), default=5,
-        help='Max # of suggestions to log per round. 0 is no assistance.')
-@option('--verbose', '-v', is_flag=True, default=False,
-        help='Displays application logs if set.')
-def main(solution: str, infolen: int, verbose: bool) -> None:
+@option(
+    "--solution",
+    "-s",
+    type=str,
+    default=None,
+    help="Provide a solution for the game. Random if not set.",
+)
+@option(
+    "--infolen",
+    "-l",
+    type=IntRange(0, 10),
+    default=5,
+    help="Max # of suggestions to log per round. 0 is no assistance.",
+)
+@option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Displays application logs if set.",
+)
+def main(solution: str, infolen: int, *, verbose: bool) -> None:
     """Play Wordle with a provided or random solution."""
-    logging.basicConfig(level=logging.INFO if verbose else logging.WARN)
+    logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
     words = cache.load_words()[0]
     patterns = cache.load_patterns()
     game = Game(words, patterns)
@@ -45,14 +59,14 @@ def main(solution: str, infolen: int, verbose: bool) -> None:
     game.set_solution(solution)
 
     if infolen > 0:
-        cache.log_initial_assistance(infolen, False)
+        cache.log_initial_assistance(infolen, targeted=False)
     while not play_one_round(game, engine, infolen):
         pass
 
     answer = game.solution
-    assert answer is not None, 'Game solution should not be None'
+    assert answer is not None, "Game solution should not be None"
     engine.simulate(answer)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -1,10 +1,9 @@
 # Wordle
 
-Play [Wordle](https://en.wikipedia.org/wiki/Wordle) with an engine that combines information theory and word frequency data to make optimal guesses and assist the user in solving puzzles. There are 3 primary modes of interaction for users:
+Play [Wordle](https://en.wikipedia.org/wiki/Wordle) with an engine that combines information theory and word frequency data to make optimal guesses and assist the user in solving puzzles. There are 2 primary modes of interaction for users:
 
 1. A self-contained "offline" mode with a provided or random solution. The user is prompted for guesses and is shown the resulting square pattern. Optional engine assistance is available.
 2. An assistant "online" mode that helps the user solve an external puzzle with an unknown solution. The user is prompted for both guesses and the square pattern returned by the puzzle.
-3. An exploratory simulations mode where the user can play around with the engine, solving simulated puzzles in a Jupyter notebook, as well as examine the data more closely.
 
 ## Usage
 
@@ -32,9 +31,9 @@ Usage: online.py [OPTIONS]
   Play Wordle with an unknown solution.
 
 Options:
-  -t, --targeted               Use known targets sub-list to prime engine.
   -l, --infolen INTEGER RANGE  Max # of suggestions to log per round. 0 is no
                                assistance.  [0<=x<=10]
+  -t, --targeted               Use known targets sub-list to prime engine.
   -v, --verbose                Displays application logs if set.
   --help                       Show this message and exit.
 ```
@@ -95,14 +94,6 @@ The logs tell you that after guessing `hello` and seeing ⬛⬛⬛🟩🟨:
 
 You are not obligated to pick according to the engine. The tables will update according to whatever word you pick and its corresponding square pattern. You can even turn off suggestions if you're looking to play puzzles as a challenge. Do what makes your heart happy!
 
-## Simulation
-
-The Jupyter notebook `simulation.ipynb` provides an interactive environment for running puzzle simulations by using the engine as a bot. Essentially, it's the computer playing against itself. We graph the uncertainty after each round to visualize how the bot iteratively prunes the possibility space.
-
-![Uncertainty graph for simulated Wordle games](resources/simulation_graph.png)
-
-Because we do not log the final winning entropy, the index on the x-axis is one short of the actual number of rounds it took to solve the puzzle. The number of rounds it takes to solve a puzzle for any given solution is included in `resources/initial_data.csv`.
-
 ### Strategy
 
 The bot follows a simple strategy in an attempt to solve the puzzle in as few rounds as possible.
@@ -111,6 +102,12 @@ The bot follows a simple strategy in an attempt to solve the puzzle in as few ro
 2. When there are at most *k* possibilities (uncertainty $\leq \log_2 k$), choose the possibility that most frequently occurs in natural language until the correct answer is reached.
 
 The hyperparameter *k* represents how lucky we're feeling. A low value for *k* means that we attempt to reduce the possibility space as much as possible before shooting for a solution. Conversely, a high value for *k* means that we start guessing solutions with less information. The bot uses a conservative value of *k* = 2 and only goes for solutions when it's a binary choice.
+
+We simulate several games with fixed solutions and graph the uncertainty after each round to visualize how the bot iteratively prunes the possibility space.
+
+![Uncertainty graph for simulated Wordle games](resources/simulation_graph.png)
+
+Because we do not log the final winning entropy, the index on the x-axis is one short of the actual number of rounds it took to solve the puzzle. The number of rounds it takes to solve a puzzle for any given solution is included in `resources/initial_data.csv`.
 
 ## Algorithm and Theory
 
