@@ -12,6 +12,10 @@ if TYPE_CHECKING:
     from tqdm import tqdm
 
 
+type StrArr = np.ndarray[tuple[int], np.dtype[np.str_]]
+type StrGrid = np.ndarray[tuple[int, int], np.dtype[np.str_]]
+
+
 class Square(Enum):
     """Define square colors and their unicode representation."""
 

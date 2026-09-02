@@ -11,11 +11,10 @@ from shutil import copyfileobj
 from typing import cast
 
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
 from tqdm import tqdm
 
-from .constants import wordle_compare
+from .constants import StrArr, StrGrid, wordle_compare
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +27,7 @@ _PATTERN_CACHE_FILE = _RESOURCE_DIR / "patterns.npy"
 _TARGETS_FILE = _RESOURCE_DIR / "targets.txt"
 
 
-def _load_txt(fpath: Path) -> npt.NDArray[np.str_]:
+def _load_txt(fpath: Path) -> StrArr:
     """Load words from a text file and validate properties."""
     words = np.loadtxt(fpath, dtype=str)
     len_vec = np.vectorize(len, otypes=[int])
@@ -44,7 +43,7 @@ def _load_txt(fpath: Path) -> npt.NDArray[np.str_]:
     return words
 
 
-def load_words() -> tuple[npt.NDArray[np.str_], npt.NDArray[np.str_]]:
+def load_words() -> tuple[StrArr, StrArr]:
     """Load the dictionary array (n,) and targets from words list."""
     words = _load_txt(_DICTIONARY_FILE)
     targets = _load_txt(_TARGETS_FILE)
@@ -62,18 +61,18 @@ def compile_patterns() -> None:
     cmp_pat = np.vectorize(wordle_compare, otypes=[str])
     with tqdm(total=words.size**2) as pbar:
         # Matrix multiply vectorization magic.
-        patterns: npt.NDArray[np.str_] = cmp_pat(words[:, np.newaxis], words, pbar)
+        patterns: StrGrid = cmp_pat(words[:, np.newaxis], words, pbar)
     logger.info("Writing patterns to cache %s", _PATTERN_CACHE_FILE)
     np.save(_PATTERN_CACHE_FILE, patterns)
     logger.info("Writing patterns to archive %s", _PATTERN_ARCHIVE_FILE)
     np.savez_compressed(_PATTERN_ARCHIVE_FILE, patterns)
 
 
-def load_patterns() -> npt.NDArray[np.str_]:
+def load_patterns() -> StrGrid:
     """Load already compiled patterns (n, n) from archive."""
     if _PATTERN_CACHE_FILE.exists():
         logger.info("Loading pre-compiled cache %s", _PATTERN_CACHE_FILE)
-        return cast("npt.NDArray[np.str_]", np.load(_PATTERN_CACHE_FILE))
+        return cast("StrGrid", np.load(_PATTERN_CACHE_FILE))
     logger.info("No pattern cache %s found", _PATTERN_CACHE_FILE)
 
     if not _PATTERN_ARCHIVE_FILE.exists():
@@ -93,7 +92,7 @@ def load_patterns() -> npt.NDArray[np.str_]:
                     copyfileobj(fsrc, fdst)
 
     logger.info("Loading pre-compiled archive %s", _PATTERN_ARCHIVE_FILE)
-    patterns = cast("npt.NDArray[np.str_]", np.load(_PATTERN_ARCHIVE_FILE)["arr_0"])
+    patterns = cast("StrGrid", np.load(_PATTERN_ARCHIVE_FILE)["arr_0"])
     logger.info("Writing patterns to cache %s", _PATTERN_CACHE_FILE)
     np.save(_PATTERN_CACHE_FILE, patterns)
     return patterns

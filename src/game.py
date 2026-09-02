@@ -6,10 +6,9 @@ Copyright 2026. Andrew Wang.
 import logging
 
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
 
-from .constants import SQUARE_VALUES, Square
+from .constants import SQUARE_VALUES, Square, StrArr, StrGrid
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +18,8 @@ class Game:
 
     def __init__(
         self,
-        words: npt.NDArray[np.str_],
-        patterns: npt.NDArray[np.str_],
+        words: StrArr,
+        patterns: StrGrid,
     ) -> None:
         """Initialize game with references to immutable data and a solution."""
         # Fast way to index given a word.
