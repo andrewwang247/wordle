@@ -6,16 +6,23 @@ Copyright 2026. Andrew Wang.
 import logging
 from collections import Counter
 from math import log2
+from typing import TYPE_CHECKING
 
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
 from scipy.stats import entropy
 
+if TYPE_CHECKING:
+    from .constants import StrArr, StrGrid
+
 logger = logging.getLogger(__name__)
 
+type IntArr = np.ndarray[tuple[int], np.dtype[np.int_]]
+type BoolArr = np.ndarray[tuple[int], np.dtype[np.bool_]]
+type FloatArr = np.ndarray[tuple[int], np.dtype[np.float64]]
 
-def _unroll_counts(row: npt.NDArray[np.str_]) -> npt.NDArray[np.int_]:
+
+def _unroll_counts(row: StrArr) -> IntArr:
     """Convert a row into unique counts with zero padding."""
     unique_counts = np.array(list(Counter(row).values()), dtype=int)
     # Pad all to same length so we can apply along axis.
@@ -29,8 +36,8 @@ class Ranker:
 
     def __init__(
         self,
-        words: npt.NDArray[np.str_],
-        patterns: npt.NDArray[np.str_],
+        words: StrArr,
+        patterns: StrGrid,
     ) -> None:
         """Construct with references to immutable data."""
         self.words = words  # (n,)
@@ -38,7 +45,7 @@ class Ranker:
         self.index = pd.Index(words)
         self.patterns = patterns  # (n, n)
         # Use masking to keep track of viable solutions
-        self.reachable: npt.NDArray[np.bool_] = np.ones_like(words, dtype=bool)
+        self.reachable: BoolArr = np.ones_like(words, dtype=bool)
 
     def remaining_state(self) -> tuple[np.int_, float]:
         """Compute stats for the remaining reachable space."""
@@ -58,17 +65,17 @@ class Ranker:
 
     def informative_guesses(
         self,
-    ) -> tuple[npt.NDArray[np.str_], npt.NDArray[np.float64]]:
+    ) -> tuple[StrArr, FloatArr]:
         """Rank the probabilistic quality of guesses by entropy (in bits)."""
         # All guesses (axis 0) are included. Exclude unreachable candidates.
         logger.info("Sorting informative guesses by entropy")
         working_set = self.patterns[:, self.reachable]
         counts = np.apply_along_axis(_unroll_counts, 1, working_set)
-        entropies: npt.NDArray[np.float64] = entropy(counts, axis=1, base=2)  # type: ignore[assignment]
+        entropies: FloatArr = entropy(counts, axis=1, base=2)  # type: ignore[assignment]
         sorted_idx = np.argsort(entropies)[::-1]
         return self.words[sorted_idx], entropies[sorted_idx]
 
-    def manual_prune(self, targets: npt.NDArray[np.str_]) -> None:
+    def manual_prune(self, targets: StrArr) -> None:
         """Mark all targets as not reachable."""
         logger.info("Marking all target as unreachable")
         mask = np.isin(self.words, targets)

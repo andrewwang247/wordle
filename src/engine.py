@@ -8,11 +8,10 @@ from functools import partial
 from typing import cast
 
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
 from wordfreq import zipf_frequency
 
-from .constants import BEST_OPENER, BEST_TARGETED_OPENER
+from .constants import BEST_OPENER, BEST_TARGETED_OPENER, StrArr, StrGrid
 from .game import Game
 from .ranking import Ranker
 
@@ -26,9 +25,9 @@ class Engine:
 
     def __init__(
         self,
-        words: npt.NDArray[np.str_],
-        patterns: npt.NDArray[np.str_],
-        targets: npt.NDArray[np.str_] | None = None,
+        words: StrArr,
+        patterns: StrGrid,
+        targets: StrArr | None = None,
     ) -> None:
         """Construct with ranker to help decide next guess."""
         self.words = words
@@ -50,8 +49,8 @@ class Engine:
 
         # Track the history of reachable counts and entropies
         reachable, uncertainty = self.ranker.remaining_state()
-        self.reachable_hist: list[np.int_] = [reachable]
-        self.uncertainty_hist: list[float] = [uncertainty]
+        self.reachable_hist = [reachable]
+        self.uncertainty_hist = [uncertainty]
 
     def feedback(self, guess: str, squares: str) -> None:
         """Update internal state with guess and squares result."""
