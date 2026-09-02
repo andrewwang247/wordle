@@ -3,7 +3,6 @@
 Copyright 2026. Andrew Wang.
 """
 
-# pylint: disable=no-value-for-parameter,duplicate-code
 import logging
 
 from click import IntRange, command, option
