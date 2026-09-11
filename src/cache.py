@@ -51,12 +51,11 @@ def load_words() -> tuple[StrArr, StrArr]:
     return words, targets
 
 
-def compile_patterns() -> None:
+def compile_patterns(words: StrArr) -> None:
     """Compile and cache pattern combinations for every pairing.
 
     Save the output patterns to a compressed numpy archive.
     """
-    words = load_words()[0]
     logger.info("Cross compiling %d patterns for %d words", words.size**2, words.size)
     cmp_pat = np.vectorize(wordle_compare, otypes=[str])
     with tqdm(total=words.size**2) as pbar:

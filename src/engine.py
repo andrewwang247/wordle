@@ -66,18 +66,12 @@ class Engine:
         self.reachable_hist.append(reachable)
         self.uncertainty_hist.append(uncertainty)
 
-    def likely_solutions(self) -> pd.DataFrame:
-        """Rank the most likely solutions based on word frequency."""
-        possible = self.words[self.ranker.reachable]
-        subset = self.log_freq.loc[possible]  # type: ignore[index]
-        return subset.sort_values(by="log_freq", ascending=False)
-
     def log_assistance(self, infolen: int) -> None:
         """Log ranked guesses and solutions to assist player."""
         if infolen <= 0:
             logger.info("Infolen %d <= 0. Skip logging assistance.", infolen)
             return
-        pos_df = self.likely_solutions()
+        pos_df = self._likely_solutions()
         print("Likely solutions")
         print(pos_df[:infolen])
         guesses, entrops = self.ranker.informative_guesses()
@@ -118,6 +112,12 @@ class Engine:
         self.reachable_hist = self.reachable_hist[:1]
         self.uncertainty_hist = self.uncertainty_hist[:1]
 
+    def _likely_solutions(self) -> pd.DataFrame:
+        """Rank the most likely solutions based on word frequency."""
+        possible = self.words[self.ranker.reachable]
+        subset = self.log_freq.loc[possible]  # type: ignore[index]
+        return subset.sort_values(by="log_freq", ascending=False)
+
     def _make_guess(self, round_num: int) -> str:
         """Decide on the optimal next guess."""
         if round_num == 0:
@@ -126,7 +126,7 @@ class Engine:
         remaining = np.sum(self.ranker.reachable)
         if remaining <= _STRATEGY_PHASE_SWITCH:
             logger.info("Reached endgame. Choosing likely solution to win.")
-            solutions = self.likely_solutions()
+            solutions = self._likely_solutions()
             assert solutions.size > 0, "Could not find likely solutions."
             return cast("str", solutions.index[0])
         logger.info("Choosing highest entropy guess to prune state space.")
