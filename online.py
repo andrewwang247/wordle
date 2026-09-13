@@ -7,7 +7,15 @@ import logging
 
 from click import IntRange, command, option
 
-from src import Engine, Game, cache, convert_squares
+from src import (
+    Engine,
+    Game,
+    Ranker,
+    convert_squares,
+    load_patterns,
+    load_words,
+    log_initial_assistance,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,13 +60,14 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
 def main(infolen: int, *, targeted: bool, verbose: bool) -> None:
     """Play Wordle with an unknown solution."""
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
-    words, targets = cache.load_words()
-    patterns = cache.load_patterns()
+    words, targets = load_words()
+    patterns = load_patterns()
     game = Game(words, patterns)
-    engine = Engine(words, patterns, targets if targeted else None)
+    ranker = Ranker(words, patterns)
+    engine = Engine(words, ranker, targets if targeted else None)
 
     if infolen > 0:
-        cache.log_initial_assistance(infolen, targeted=targeted)
+        log_initial_assistance(infolen, targeted=targeted)
     print('Use "b", "y", "g" to denote squares color')
     while not play_one_round(game, engine, infolen):
         pass
