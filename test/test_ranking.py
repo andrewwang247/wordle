@@ -31,10 +31,10 @@ def test_invalid(ranker: Ranker) -> None:
 
 def test_game(ranker: Ranker) -> None:
     """Test rankings over a game with solution blaze."""
-    guesses = ["comet", "gleam", "black"]
-    squares = ["bbbyb", "bgyyb", "gggbb"]
-    remainder = [1_610, 21, 4]
-    informative = ["rials", "skarn", "rosed"]
+    guesses = ["gleam", "comet", "space"]
+    squares = ["bgyyb", "bbbyb", "bbgbg"]
+    remainder = [51, 21, 7]
+    informative = ["stane", "skarn", "frond"]
 
     for gs, sq, remain, next_gs in zip(
         guesses, squares, remainder, informative, strict=True
