@@ -7,10 +7,7 @@ from math import log2
 
 import pytest
 
-from src import Ranker, convert_squares, load_patterns, load_words
-
-WORDS, _ = load_words()
-PATTERNS = load_patterns()
+from src import Ranker, convert_squares
 
 
 def _get_rankings() -> list[tuple[list[str], list[str], list[int], list[str | None]]]:
@@ -32,16 +29,6 @@ def _get_rankings() -> list[tuple[list[str], list[str], list[int], list[str | No
             ["peons", "sloot", "stipe", None],
         ),
     ]
-
-
-@pytest.fixture
-def ranker() -> Ranker:
-    """Create new ranker for all test."""
-    ranker = Ranker(WORDS, PATTERNS)
-    reachable, uncertainty = ranker.remaining_state()
-    assert reachable == len(WORDS)
-    assert uncertainty == log2(len(WORDS))
-    return ranker
 
 
 def test_invalid(ranker: Ranker) -> None:

@@ -5,7 +5,7 @@ Copyright 2026. Andrew Wang.
 
 import pytest
 
-from src import Engine, Ranker, load_patterns, load_words
+from src import Engine, load_patterns, load_words
 
 WORDS, _ = load_words()
 PATTERNS = load_patterns()
@@ -20,13 +20,6 @@ def _get_histories() -> list[list[str | None]]:
         ["tares", "spout", None, "frost"],
         ["tares", "neeld", "almah", None, "bleak"],
     ]
-
-
-@pytest.fixture
-def engine() -> Engine:
-    """Create new engine for each test."""
-    ranker = Ranker(WORDS, PATTERNS)
-    return Engine(WORDS, ranker)
 
 
 @pytest.mark.parametrize("history", _get_histories())

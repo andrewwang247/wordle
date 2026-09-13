@@ -5,18 +5,7 @@ Copyright 2026. Andrew Wang.
 
 import pytest
 
-from src import Game, convert_squares, load_patterns, load_words
-
-WORDS, _ = load_words()
-PATTERNS = load_patterns()
-
-
-@pytest.fixture
-def game() -> Game:
-    """Create starting game for all tests."""
-    game = Game(WORDS, PATTERNS)
-    assert game.current_round() == 0
-    return game
+from src import Game, convert_squares
 
 
 def test_invalid(game: Game) -> None:
