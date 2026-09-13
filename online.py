@@ -74,6 +74,7 @@ def main(infolen: int, *, targeted: bool, verbose: bool) -> None:
 
     answer = game.guess_hist[-1]
     assert answer is not None, "Game solution should not be None"
+    engine.reset()
     engine.simulate(answer)
 
 

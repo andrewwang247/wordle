@@ -87,7 +87,6 @@ class Engine:
 
     def simulate(self, solution: str) -> Game:
         """Simulate playing with defined solution. Return constructed game."""
-        self._reset()
         announcement = "Simulating engine game with solution"
         print("=" * (len(announcement) + 1 + len(solution)))
         print(f"{announcement} {solution}")
@@ -106,7 +105,7 @@ class Engine:
             self.feedback(guess, squares)
         return game
 
-    def _reset(self) -> None:
+    def reset(self) -> None:
         """Reset the internal state for a new game."""
         logger.info("Resetting engine state")
         self.ranker.reset()
