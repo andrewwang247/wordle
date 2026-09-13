@@ -221,6 +221,10 @@ The other somewhat expensive operation is generating suggestions after each roun
 
 When using the `--targeted` flag in online mode, we essentially make a "shadow guess" that removes any word outside the target sublist `resources/targets.txt` from the possibility space.
 
+## Testing
+
+Unit tests cover Wordle comparisons, game mechanics, engine simulation, and the ranking algorithm. Run `pytest` to execute all tests.
+
 ## Acknowledgements
 
 This project was inspired by Grant Sanderson of [3Blue1Brown](https://www.3blue1brown.com/). Check out his videos on Wordle:
