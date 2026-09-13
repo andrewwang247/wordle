@@ -13,7 +13,13 @@ PATTERNS = load_patterns()
 
 def _get_histories() -> list[list[str | None]]:
     """Retrieve list of game histories. None is a stand-in for any guess."""
-    return [["tares", "bound", None, "fjord"]]
+    return [
+        ["tares", "bound", None, "fjord"],
+        ["tares", "mincy", "cabin"],
+        ["tares", "spite", "oleum", None, "stone"],
+        ["tares", "spout", None, "frost"],
+        ["tares", "neeld", "almah", None, "bleak"],
+    ]
 
 
 @pytest.fixture
