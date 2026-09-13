@@ -13,7 +13,28 @@ WORDS, _ = load_words()
 PATTERNS = load_patterns()
 
 
-@pytest.fixture(scope="module")
+def _get_rankings() -> list[tuple[list[str], list[str], list[int], list[str | None]]]:
+    """Get guesses, squares, remainders, and suggestions.
+
+    None is a stand-in for no valid suggestion.
+    """
+    return [
+        (
+            ["gleam", "comet", "space", "blaze"],
+            ["bgyyb", "bbbyb", "bbgbg", "ggggg"],
+            [51, 21, 7, 1],
+            ["stane", "skarn", "frond", None],
+        ),
+        (
+            ["coral", "amber", "black", "olive"],
+            ["bybby", "bbbyb", "bgbbb", "ggggg"],
+            [215, 54, 23, 1],
+            ["peons", "sloot", "stipe", None],
+        ),
+    ]
+
+
+@pytest.fixture
 def ranker() -> Ranker:
     """Create new ranker for all test."""
     ranker = Ranker(WORDS, PATTERNS)
@@ -29,24 +50,24 @@ def test_invalid(ranker: Ranker) -> None:
         ranker.update("abcde", convert_squares("bgygb"))
 
 
-def test_game(ranker: Ranker) -> None:
-    """Test rankings over a game with solution blaze."""
-    guesses = ["gleam", "comet", "space"]
-    squares = ["bgyyb", "bbbyb", "bbgbg"]
-    remainder = [51, 21, 7]
-    informative = ["stane", "skarn", "frond"]
-
-    for gs, sq, remain, next_gs in zip(
+@pytest.mark.parametrize(
+    ("guesses", "squares", "remainder", "informative"), _get_rankings()
+)
+def test_game(
+    ranker: Ranker,
+    guesses: list[str],
+    squares: list[str],
+    remainder: list[int],
+    informative: list[str | None],
+) -> None:
+    """Test rankings with series of rounds."""
+    for gs, sq, remain, suggested in zip(
         guesses, squares, remainder, informative, strict=True
     ):
         ranker.update(gs, convert_squares(sq))
         actual_reachable, uncertainty = ranker.remaining_state()
         assert actual_reachable == remain
         assert uncertainty == log2(remain)
-        actual_guesses, _ = ranker.informative_guesses()
-        assert actual_guesses[0] == next_gs
-
-    ranker.update("blaze", convert_squares("ggggg"))
-    reachable, uncertainty = ranker.remaining_state()
-    assert reachable == 1
-    assert uncertainty == log2(reachable)
+        if suggested:
+            actual_guesses, _ = ranker.informative_guesses()
+            assert actual_guesses[0] == suggested
