@@ -65,6 +65,7 @@ def main(solution: str, infolen: int, *, verbose: bool) -> None:
 
     answer = game.solution
     assert answer is not None, "Game solution should not be None"
+    engine.reset()
     engine.simulate(answer)
 
 
