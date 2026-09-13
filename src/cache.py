@@ -12,19 +12,16 @@ from typing import cast
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
-from .constants import StrArr, StrGrid, wordle_compare
+from .constants import (
+    _PATTERN_ARCHIVE_FILE,
+    _PATTERN_CACHE_FILE,
+    _RESOURCE_DIR,
+    StrArr,
+    StrGrid,
+)
 
 logger = logging.getLogger(__name__)
-
-_CHUNK_DIR = Path("bin/")
-_RESOURCE_DIR = Path("resources/")
-_DICTIONARY_FILE = _RESOURCE_DIR / "words.txt"
-_INITIAL_DATA_FILE = _RESOURCE_DIR / "initial_data.csv"
-_PATTERN_ARCHIVE_FILE = _RESOURCE_DIR / "patterns.npz"
-_PATTERN_CACHE_FILE = _RESOURCE_DIR / "patterns.npy"
-_TARGETS_FILE = _RESOURCE_DIR / "targets.txt"
 
 
 def _load_txt(fpath: Path) -> StrArr:
@@ -45,26 +42,10 @@ def _load_txt(fpath: Path) -> StrArr:
 
 def load_words() -> tuple[StrArr, StrArr]:
     """Load the dictionary array (n,) and targets from words list."""
-    words = _load_txt(_DICTIONARY_FILE)
-    targets = _load_txt(_TARGETS_FILE)
+    words = _load_txt(_RESOURCE_DIR / "words.txt")
+    targets = _load_txt(_RESOURCE_DIR / "targets.txt")
     assert np.all(np.isin(targets, words)), "Targets must be subset of words"
     return words, targets
-
-
-def compile_patterns(words: StrArr) -> None:
-    """Compile and cache pattern combinations for every pairing.
-
-    Save the output patterns to a compressed numpy archive.
-    """
-    logger.info("Cross compiling %d patterns for %d words", words.size**2, words.size)
-    cmp_pat = np.vectorize(wordle_compare, otypes=[str])
-    with tqdm(total=words.size**2) as pbar:
-        # Matrix multiply vectorization magic.
-        patterns: StrGrid = cmp_pat(words[:, np.newaxis], words, pbar)
-    logger.info("Writing patterns to cache %s", _PATTERN_CACHE_FILE)
-    np.save(_PATTERN_CACHE_FILE, patterns)
-    logger.info("Writing patterns to archive %s", _PATTERN_ARCHIVE_FILE)
-    np.savez_compressed(_PATTERN_ARCHIVE_FILE, patterns)
 
 
 def load_patterns() -> StrGrid:
@@ -76,14 +57,15 @@ def load_patterns() -> StrGrid:
 
     if not _PATTERN_ARCHIVE_FILE.exists():
         logger.info("No pattern archive %s found", _PATTERN_ARCHIVE_FILE)
-        chunk_files = list(_CHUNK_DIR.iterdir())
+        chunk_dir = Path("bin/")
+        chunk_files = list(chunk_dir.iterdir())
         assert chunk_files, "Missing saved archive partitions. Run compile_patterns."
         chunk_files.sort()
 
         logger.info(
             "Joining %d binary partitions from %s",
             len(chunk_files),
-            _CHUNK_DIR,
+            chunk_dir,
         )
         with _PATTERN_ARCHIVE_FILE.open("wb") as fdst:
             for chunk in chunk_files:
@@ -100,7 +82,7 @@ def load_patterns() -> StrGrid:
 def log_initial_assistance(infolen: int, *, targeted: bool) -> None:
     """Log cached opening guess assistance for player."""
     # Only runs once per session. Ok not to store.
-    df = pd.read_csv(_INITIAL_DATA_FILE, index_col="word")
+    df = pd.read_csv(_RESOURCE_DIR / "initial_data.csv", index_col="word")
 
     # Attempt to match format of engine assistance.
     df.index = df.index.set_names(None)

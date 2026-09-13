@@ -5,15 +5,17 @@ Copyright 2026. Andrew Wang.
 
 import logging
 from functools import partial
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pandas as pd
 from wordfreq import zipf_frequency
 
-from .constants import BEST_OPENER, BEST_TARGETED_OPENER, StrArr, StrGrid
+from .constants import BEST_OPENER, BEST_TARGETED_OPENER, StrArr
 from .game import Game
-from .ranking import Ranker
+
+if TYPE_CHECKING:
+    from .ranking import Ranker
 
 logger = logging.getLogger(__name__)
 
@@ -26,13 +28,13 @@ class Engine:
     def __init__(
         self,
         words: StrArr,
-        patterns: StrGrid,
+        ranker: Ranker,
         targets: StrArr | None = None,
     ) -> None:
         """Construct with ranker to help decide next guess."""
         self.words = words
         self.targets = targets
-        self.ranker = Ranker(words, patterns)
+        self.ranker = ranker
 
         logger.info("Retrieving Zipf frequency for words")
         freq_vec = np.vectorize(partial(zipf_frequency, lang="en"), otypes=[float])
@@ -85,7 +87,7 @@ class Engine:
 
     def simulate(self, solution: str) -> Game:
         """Simulate playing with defined solution. Return constructed game."""
-        self.reset()
+        self._reset()
         announcement = "Simulating engine game with solution"
         print("=" * (len(announcement) + 1 + len(solution)))
         print(f"{announcement} {solution}")
@@ -104,7 +106,7 @@ class Engine:
             self.feedback(guess, squares)
         return game
 
-    def reset(self) -> None:
+    def _reset(self) -> None:
         """Reset the internal state for a new game."""
         logger.info("Resetting engine state")
         self.ranker.reset()
