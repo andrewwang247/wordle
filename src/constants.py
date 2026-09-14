@@ -5,20 +5,17 @@ Copyright 2026. Andrew Wang.
 
 import logging
 from enum import Enum
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from tqdm import tqdm
+
+if TYPE_CHECKING:
+    from tqdm import tqdm
 
 type StrArr = np.ndarray[tuple[int], np.dtype[np.str_]]
 type StrGrid = np.ndarray[tuple[int, int], np.dtype[np.str_]]
 
 logger = logging.getLogger(__name__)
-
-_RESOURCE_DIR = Path("resources/")
-_PATTERN_ARCHIVE_FILE = _RESOURCE_DIR / "patterns.npz"
-_PATTERN_CACHE_FILE = _RESOURCE_DIR / "patterns.npy"
 
 
 class Square(Enum):
@@ -27,12 +24,6 @@ class Square(Enum):
     BLACK = "\U00002b1b"
     YELLOW = "\U0001f7e8"
     GREEN = "\U0001f7e9"
-
-
-SQUARE_VALUES = {item.value for item in Square}
-
-BEST_OPENER = "tares"
-BEST_TARGETED_OPENER = "tarse"
 
 
 def convert_squares(user_str: str) -> str:
@@ -87,19 +78,3 @@ def wordle_compare(
     if pbar:
         pbar.update(1)
     return "".join(squares)
-
-
-def compile_patterns(words: StrArr) -> None:
-    """Compile and cache pattern combinations for every pairing.
-
-    Save the output patterns to a compressed numpy archive.
-    """
-    logger.info("Cross compiling %d patterns for %d words", words.size**2, words.size)
-    cmp_pat = np.vectorize(wordle_compare, otypes=[str])
-    with tqdm(total=words.size**2) as pbar:
-        # Matrix multiply vectorization magic.
-        patterns: StrGrid = cmp_pat(words[:, np.newaxis], words, pbar)
-    logger.info("Writing patterns to cache %s", _PATTERN_CACHE_FILE)
-    np.save(_PATTERN_CACHE_FILE, patterns)
-    logger.info("Writing patterns to archive %s", _PATTERN_ARCHIVE_FILE)
-    np.savez_compressed(_PATTERN_ARCHIVE_FILE, patterns)

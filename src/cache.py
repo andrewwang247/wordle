@@ -12,16 +12,15 @@ from typing import cast
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
-from .constants import (
-    _PATTERN_ARCHIVE_FILE,
-    _PATTERN_CACHE_FILE,
-    _RESOURCE_DIR,
-    StrArr,
-    StrGrid,
-)
+from .constants import StrArr, StrGrid, wordle_compare
 
 logger = logging.getLogger(__name__)
+
+_RESOURCE_DIR = Path("resources/")
+_PATTERN_ARCHIVE_FILE = _RESOURCE_DIR / "patterns.npz"
+_PATTERN_CACHE_FILE = _RESOURCE_DIR / "patterns.npy"
 
 
 def _load_txt(fpath: Path) -> StrArr:
@@ -97,3 +96,19 @@ def log_initial_assistance(infolen: int, *, targeted: bool) -> None:
     gs_df = df.sort_values(by=key, ascending=False)
     print("Informative guesses")
     print(pd.DataFrame(np.round(gs_df[key], 3))[:infolen])
+
+
+def compile_patterns(words: StrArr) -> None:
+    """Compile and cache pattern combinations for every pairing.
+
+    Save the output patterns to a compressed numpy archive.
+    """
+    logger.info("Cross compiling %d patterns for %d words", words.size**2, words.size)
+    cmp_pat = np.vectorize(wordle_compare, otypes=[str])
+    with tqdm(total=words.size**2) as pbar:
+        # Matrix multiply vectorization magic.
+        patterns: StrGrid = cmp_pat(words[:, np.newaxis], words, pbar)
+    logger.info("Writing patterns to cache %s", _PATTERN_CACHE_FILE)
+    np.save(_PATTERN_CACHE_FILE, patterns)
+    logger.info("Writing patterns to archive %s", _PATTERN_ARCHIVE_FILE)
+    np.savez_compressed(_PATTERN_ARCHIVE_FILE, patterns)

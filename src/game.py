@@ -8,9 +8,11 @@ import logging
 import numpy as np
 import pandas as pd
 
-from .constants import SQUARE_VALUES, Square, StrArr, StrGrid
+from .constants import Square, StrArr, StrGrid
 
 logger = logging.getLogger(__name__)
+
+_SQUARE_VALUES = [item.value for item in Square]
 
 
 class Game:
@@ -34,12 +36,12 @@ class Game:
 
     def set_solution(self, solution: str | None = None) -> None:
         """Initialize game with a given (or random) solution."""
-        if solution is None:
-            rng = np.random.default_rng()
-            self.solution = rng.choice(self.index)
-        else:
+        if solution:
             assert solution in self.index, f"{solution} is not in dictionary."
             self.solution = solution
+        else:
+            rng = np.random.default_rng()
+            self.solution = rng.choice(self.index)
 
         self.guess_hist = []
         solution_index = self.index.get_loc(self.solution)
@@ -59,8 +61,8 @@ class Game:
         assert len(word) == len(squares), (
             f"Mismatched lengths: guess {len(word)} and square {len(squares)}"
         )
-        assert all(sq in SQUARE_VALUES for sq in squares), (
-            f"{squares} is an invalid square string"
+        assert all(sq in _SQUARE_VALUES for sq in squares), (
+            f"{squares} is an invalid pattern"
         )
         self.guess_hist.append(word)
         self.square_hist.append(squares)
@@ -69,7 +71,7 @@ class Game:
         is_win = all(sq == Square.GREEN.value for sq in squares)
         if not is_win:
             return False
-        if self.solution is not None:
+        if self.solution:
             assert word == self.solution, (
                 f"Word {word} does not match solution {self.solution}."
             )
@@ -78,7 +80,7 @@ class Game:
 
     def guess_is_win(self, word: str) -> tuple[str, bool]:
         """Process a guess and return the square combo + win state."""
-        assert self.solution is not None, "Solution was not set."
+        assert self.solution, "Solution was not defined."
         assert word in self.index, f"{word} is not in dictionary."
         gs_idx = self.index.get_loc(word)
         result = str(self.patterns[gs_idx, self.sol_idx])

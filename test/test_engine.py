@@ -3,12 +3,12 @@
 Copyright 2026. Andrew Wang.
 """
 
+from typing import TYPE_CHECKING
+
 import pytest
 
-from src import Engine, load_patterns, load_words
-
-WORDS, _ = load_words()
-PATTERNS = load_patterns()
+if TYPE_CHECKING:
+    from src import Engine
 
 
 def _get_histories() -> list[list[str | None]]:
