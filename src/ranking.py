@@ -24,10 +24,10 @@ type FloatArr = np.ndarray[tuple[int], np.dtype[np.float64]]
 
 def _unroll_counts(row: StrArr) -> IntArr:
     """Convert a row into unique counts with zero padding."""
-    unique_counts = np.array(list(Counter(row).values()), dtype=int)
+    unique_counts = np.array(list(Counter(row).values()), dtype=np.int_)
     # Pad all to same length so we can apply along axis.
     amount_short = row.size - unique_counts.size
-    padding = np.zeros(amount_short, dtype=int)
+    padding = np.zeros(amount_short, dtype=np.int_)
     return np.concatenate([unique_counts, padding])
 
 
@@ -45,7 +45,7 @@ class Ranker:
         self.index = pd.Index(words)
         self.patterns = patterns  # (n, n)
         # Use masking to keep track of viable solutions
-        self.reachable: BoolArr = np.ones_like(words, dtype=bool)
+        self.reachable: BoolArr = np.ones_like(words, dtype=np.bool_)
 
     def remaining_state(self) -> tuple[np.int_, float]:
         """Compute stats for the remaining reachable space."""
@@ -84,4 +84,4 @@ class Ranker:
     def reset(self) -> None:
         """Reset the internal state to a clean slate."""
         logger.info("Resetting ranker state")
-        self.reachable = np.ones_like(self.words, dtype=bool)
+        self.reachable.fill(np.True_)

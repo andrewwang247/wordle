@@ -112,8 +112,8 @@ class Engine:
         logger.info("Resetting engine state")
         self.ranker.reset()
         # Initial item in reachable and uncertainty history remains constant
-        self.reachable_hist = self.reachable_hist[:1]
-        self.uncertainty_hist = self.uncertainty_hist[:1]
+        del self.reachable_hist[1:]
+        del self.uncertainty_hist[1:]
 
     def _likely_solutions(self) -> pd.DataFrame:
         """Rank the most likely solutions based on word frequency."""

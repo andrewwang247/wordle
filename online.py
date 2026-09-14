@@ -72,10 +72,9 @@ def main(infolen: int, *, targeted: bool, verbose: bool) -> None:
     while not play_one_round(game, engine, infolen):
         pass
 
-    answer = game.guess_hist[-1]
-    assert answer, "Game solution should not be defined"
+    assert game.solution, "Game solution should be defined"
     engine.reset()
-    engine.simulate(answer)
+    engine.simulate(game.solution)
 
 
 if __name__ == "__main__":

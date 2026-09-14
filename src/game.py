@@ -13,6 +13,7 @@ from .constants import Square, StrArr, StrGrid
 logger = logging.getLogger(__name__)
 
 _SQUARE_VALUES = [item.value for item in Square]
+_RNG = np.random.default_rng()
 
 
 class Game:
@@ -40,8 +41,7 @@ class Game:
             assert solution in self.index, f"{solution} is not in dictionary."
             self.solution = solution
         else:
-            rng = np.random.default_rng()
-            self.solution = rng.choice(self.index)
+            self.solution = _RNG.choice(self.index)
 
         self.guess_hist = []
         solution_index = self.index.get_loc(self.solution)
@@ -75,6 +75,8 @@ class Game:
             assert word == self.solution, (
                 f"Word {word} does not match solution {self.solution}."
             )
+        else:
+            self.solution = word
         print(f"Completed game in {round_number} rounds")
         return True
 
