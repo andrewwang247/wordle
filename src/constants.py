@@ -52,8 +52,8 @@ def wordle_compare(
     This runs in a very tight vectorized loop during compilation.
     """
     assert len(guess) == len(answer), "Guess and answer must have matching lengths"
-    guess_np = np.array(list(guess), dtype="<1U")
-    answer_np = np.array(list(answer), dtype="<1U")
+    guess_np = np.fromiter(guess, dtype="<1U")
+    answer_np = np.fromiter(answer, dtype="<1U")
     squares = np.full_like(guess_np, Square.BLACK.value, dtype="<1U")
 
     # Green is the easiest case to handle by position.

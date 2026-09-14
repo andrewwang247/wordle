@@ -48,7 +48,7 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
     default=False,
     help="Displays application logs if set.",
 )
-def main(solution: str, infolen: int, *, verbose: bool) -> None:
+def main(solution: str | None, infolen: int, *, verbose: bool) -> None:
     """Play Wordle with a provided or random solution."""
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
     words, _ = load_words()
@@ -63,10 +63,9 @@ def main(solution: str, infolen: int, *, verbose: bool) -> None:
     while not play_one_round(game, engine, infolen):
         pass
 
-    answer = game.solution
-    assert answer, "Game solution should be defined"
+    assert game.solution, "Game solution should be defined"
     engine.reset()
-    engine.simulate(answer)
+    engine.simulate(game.solution)
 
 
 if __name__ == "__main__":

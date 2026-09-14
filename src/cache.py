@@ -18,6 +18,7 @@ from .constants import StrArr, StrGrid, wordle_compare
 
 logger = logging.getLogger(__name__)
 
+_CHUNK_DIR = Path("bin")
 _RESOURCE_DIR = Path("resources/")
 _PATTERN_ARCHIVE_FILE = _RESOURCE_DIR / "patterns.npz"
 _PATTERN_CACHE_FILE = _RESOURCE_DIR / "patterns.npy"
@@ -25,8 +26,8 @@ _PATTERN_CACHE_FILE = _RESOURCE_DIR / "patterns.npy"
 
 def _load_txt(fpath: Path) -> StrArr:
     """Load words from a text file and validate properties."""
-    words = np.loadtxt(fpath, dtype=str)
-    len_vec = np.vectorize(len, otypes=[int])
+    words = np.loadtxt(fpath, dtype=np.str_)
+    len_vec = np.vectorize(len, otypes=[np.int_])
     unique_lens = np.unique(len_vec(words))
     assert unique_lens.size == 1, f"Words in {fpath} must have uniform length"
     assert np.unique(words).size == words.size, f"Words in {fpath} must be unique"
@@ -56,15 +57,14 @@ def load_patterns() -> StrGrid:
 
     if not _PATTERN_ARCHIVE_FILE.exists():
         logger.info("No pattern archive %s found", _PATTERN_ARCHIVE_FILE)
-        chunk_dir = Path("bin/")
-        chunk_files = list(chunk_dir.iterdir())
+        chunk_files = list(_CHUNK_DIR.iterdir())
         assert chunk_files, "Missing saved archive partitions. Run compile_patterns."
         chunk_files.sort()
 
         logger.info(
             "Joining %d binary partitions from %s",
             len(chunk_files),
-            chunk_dir,
+            _CHUNK_DIR,
         )
         with _PATTERN_ARCHIVE_FILE.open("wb") as fdst:
             for chunk in chunk_files:
