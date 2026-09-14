@@ -11,14 +11,16 @@ import numpy as np
 import pandas as pd
 from wordfreq import zipf_frequency
 
-from .constants import BEST_OPENER, BEST_TARGETED_OPENER, StrArr
 from .game import Game
 
 if TYPE_CHECKING:
+    from .constants import StrArr
     from .ranking import Ranker
 
 logger = logging.getLogger(__name__)
 
+_BEST_OPENER = "tares"
+_BEST_TARGETED_OPENER = "tarse"
 _STRATEGY_PHASE_SWITCH = 2
 
 
@@ -43,11 +45,11 @@ class Engine:
             index=words,
             columns=["log_freq"],
         )
-        if targets is not None:
+        if targets:
             self.ranker.manual_prune(targets)
-            self.cached_opener = BEST_TARGETED_OPENER
+            self.cached_opener = _BEST_TARGETED_OPENER
         else:
-            self.cached_opener = BEST_OPENER
+            self.cached_opener = _BEST_OPENER
 
         # Track the history of reachable counts and entropies
         reachable, uncertainty = self.ranker.remaining_state()
@@ -92,7 +94,7 @@ class Engine:
         print(f"{announcement} {solution}")
         game = Game(self.words, self.ranker.patterns)
         game.set_solution(solution)
-        if self.targets is not None:
+        if self.targets:
             assert solution in self.targets, (
                 f"{solution} is not in provided targets sub-list"
             )
