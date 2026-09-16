@@ -165,7 +165,7 @@ Our goal is to minimize the number of rounds it takes to reduce this uncertainty
 
 ## Data and Caching
 
-Where possible, I've attempted to make use of vectorized numpy operations to reduce the time spent in pure Python loops. Even then, there are certain operations that are computationally expensive when repeated over the large dataset that we use.
+Where possible, I've attempted to make use of vectorized numpy operations to reduce the time spent in pure Python loops. Furthermore, we use `bytes` rather than `str` to minimize the memory footprint and improve cache locality. Even then, there are certain operations that are expensive when performed over the large dataset that we use.
 
 ### Pattern Matrix
 

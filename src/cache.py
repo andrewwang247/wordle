@@ -104,7 +104,7 @@ def compile_patterns(words: ByteArr) -> None:
     Save the output patterns to a compressed numpy archive.
     """
     logger.info("Cross compiling %d patterns for %d words", words.size**2, words.size)
-    cmp_pat = np.vectorize(wordle_compare, otypes=[str])
+    cmp_pat = np.vectorize(wordle_compare, otypes=[np.bytes_])
     with tqdm(total=words.size**2) as pbar:
         # Matrix multiply vectorization magic.
         patterns: ByteGrid = cmp_pat(words[:, np.newaxis], words, pbar)
