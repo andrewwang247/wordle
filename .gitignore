@@ -1,3 +1,10 @@
+# Extensionless files
+*
+!*/
+!*.*
+!Makefile
+!LICENSE
+
 # Python
 *.pyc
 __pycache__/
@@ -8,6 +15,13 @@ venv/
 .venv/
 .pytest_cache
 .mypy_cache
+
+# Executables and debug files
+*.exe
+*.dSYM
+*.stackdump
+build/
+compile_commands.json
 
 # Numpy
 # Saved files too large for Github
