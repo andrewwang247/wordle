@@ -12,23 +12,25 @@ if TYPE_CHECKING:
     from src import Ranker
 
 
-def _get_rankings() -> list[tuple[list[str], list[str], list[int], list[str | None]]]:
+def _get_rankings() -> list[
+    tuple[list[bytes], list[bytes], list[int], list[bytes | None]]
+]:
     """Get guesses, squares, remainders, and suggestions.
 
     None is a stand-in for no valid suggestion.
     """
     return [
         (
-            ["gleam", "comet", "space", "blaze"],
-            ["bgyyb", "bbbyb", "bbgbg", "ggggg"],
+            [b"gleam", b"comet", b"space", b"blaze"],
+            [b"bgyyb", b"bbbyb", b"bbgbg", b"ggggg"],
             [51, 21, 7, 1],
-            ["stane", "skarn", "frond", None],
+            [b"stane", b"skarn", b"frond", None],
         ),
         (
-            ["coral", "amber", "black", "olive"],
-            ["bybby", "bbbyb", "bgbbb", "ggggg"],
+            [b"coral", b"amber", b"black", b"olive"],
+            [b"bybby", b"bbbyb", b"bgbbb", b"ggggg"],
             [215, 54, 23, 1],
-            ["peons", "sloot", "stipe", None],
+            [b"peons", b"sloot", b"stipe", None],
         ),
     ]
 
@@ -44,19 +46,19 @@ def test_invalid(ranker: Ranker) -> None:
 )
 def test_game(
     ranker: Ranker,
-    guesses: list[str],
-    squares: list[str],
+    guesses: list[bytes],
+    squares: list[bytes],
     remainder: list[int],
-    informative: list[str | None],
+    informative: list[bytes | None],
 ) -> None:
     """Test rankings with series of rounds."""
     for gs, sq, remain, suggested in zip(
         guesses, squares, remainder, informative, strict=True
     ):
-        ranker.update(gs.encode("ascii"), sq.encode("ascii"))
+        ranker.update(gs, sq)
         actual_reachable, uncertainty = ranker.remaining_state()
         assert actual_reachable == remain
         assert uncertainty == log2(remain)
         if suggested:
             actual_guesses, _ = ranker.informative_guesses()
-            assert actual_guesses[0] == suggested.encode("ascii")
+            assert actual_guesses[0] == suggested

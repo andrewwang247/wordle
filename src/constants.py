@@ -43,27 +43,26 @@ def convert_squares(squares: bytes) -> str:
 
 
 def wordle_compare(
-    guess: str,
-    answer: str,
+    guess: bytes,
+    answer: bytes,
     pbar: tqdm[Any] | None = None,
-) -> str:
+) -> bytes:
     """Given a guess and an answer, generate the squares pattern.
 
     This runs in a very tight vectorized loop during compilation.
     """
     assert len(guess) == len(answer), "Guess and answer must have matching lengths"
-    guess_np = np.fromiter(guess, dtype="<1U")
-    answer_np = np.fromiter(answer, dtype="<1U")
-    squares = np.full_like(guess_np, "b", dtype="<1U")
+    guess_np: ByteArr = np.frombuffer(guess, dtype="S1")
+    answer_np: ByteArr = np.frombuffer(answer, dtype="S1")
+    squares: ByteArr = np.full_like(guess_np, b"b", dtype="S1")
 
     # Green is the easiest case to handle by position.
-    # The mask gm is used to remove them in further processing.
+    # not_green is used as a mask in further processing.
     not_green = guess_np != answer_np
-    squares[~not_green] = "g"
+    squares[~not_green] = b"g"
 
-    # We need to get the number (n) of times a guess letter in
-    # a non-green spot occurs in expected. From there, we color
-    # the first (up to) n occurrences of the letter yellow in guess.
+    # Count times n a letter in a non-green guess spot occurs in answer.
+    # Color the first (up to) n occurrences of the letter yellow in guess.
     for cand in np.unique(guess_np[not_green]):
         # For every distinct character in guess not in a green spot,
         # get the number of times it appears in a non green answer spot.
@@ -73,8 +72,8 @@ def wordle_compare(
         # Get indices where both not green and guess matches character.
         possible_idx = np.where(not_green & matching_spots)[0]
         # Make all of those indices up to cand_count yellow.
-        squares[possible_idx[:cand_count]] = "y"
+        squares[possible_idx[:cand_count]] = b"y"
 
     if pbar:
         pbar.update(1)
-    return "".join(squares)
+    return squares.tobytes()

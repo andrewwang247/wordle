@@ -24,10 +24,10 @@ def test_invalid(game: Game) -> None:
 
 def test_online(game: Game) -> None:
     """Test online game with provided squares."""
-    guesses = ["reefs", "crest", "beach", "coast"]
-    squares = ["bbgbb", "ybgbb", "byyyb", "yyybb"]
+    guesses = [b"reefs", b"crest", b"beach", b"coast"]
+    squares = [b"bbgbb", b"ybgbb", b"byyyb", b"yyybb"]
     for rnd, (gs, sq) in enumerate(zip(guesses, squares, strict=True), start=1):
-        is_win = game.append_is_win(gs.encode("ascii"), sq.encode("ascii"))
+        is_win = game.append_is_win(gs, sq)
         assert not is_win
         assert game.current_round() == rnd
     assert game.append_is_win(b"ocean", b"ggggg")
@@ -37,12 +37,12 @@ def test_online(game: Game) -> None:
 def test_offline(game: Game) -> None:
     """Test offline game with generated squares."""
     game.set_solution(b"fungi")
-    guesses = ["fauna", "ferns", "pines", "woods"]
-    squares = ["gbyyb", "gbbyb", "bygbb", "bbbbb"]
+    guesses = [b"fauna", b"ferns", b"pines", b"woods"]
+    squares = [b"gbyyb", b"gbbyb", b"bygbb", b"bbbbb"]
     for rnd, (gs, sq) in enumerate(zip(guesses, squares, strict=True), start=1):
-        actual, is_win = game.guess_is_win(gs.encode("ascii"))
+        actual, is_win = game.guess_is_win(gs)
         assert not is_win
-        assert actual == sq.encode("ascii")
+        assert actual == sq
         assert game.current_round() == rnd
     win_sq, won = game.guess_is_win(b"fungi")
     assert won
