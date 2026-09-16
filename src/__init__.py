@@ -4,6 +4,7 @@ Copyright 2026. Andrew Wang
 """
 
 from .cache import load_patterns as load_patterns
+from .cache import load_targets as load_targets
 from .cache import load_words as load_words
 from .cache import log_initial_assistance as log_initial_assistance
 from .constants import ByteArr as ByteArr

@@ -6,8 +6,9 @@ Copyright 2026. Andrew Wang.
 """
 
 import logging
+import subprocess
 from pathlib import Path
-from shutil import copyfileobj
+from shutil import copyfileobj, which
 from typing import cast
 
 import numpy as np
@@ -19,9 +20,11 @@ from .constants import ByteArr, ByteGrid, wordle_compare
 logger = logging.getLogger(__name__)
 
 _CHUNK_DIR = Path("bin")
-_RESOURCE_DIR = Path("resources/")
+_RESOURCE_DIR = Path("resources")
+_WORDS_FILE = _RESOURCE_DIR / "words.txt"
 _PATTERN_ARCHIVE_FILE = _RESOURCE_DIR / "patterns.npz"
 _PATTERN_CACHE_FILE = _RESOURCE_DIR / "patterns.npy"
+_NATIVE_BINARY = Path("build/patterns")
 
 
 def _load_txt(fpath: Path) -> ByteArr:
@@ -40,12 +43,14 @@ def _load_txt(fpath: Path) -> ByteArr:
     return words
 
 
-def load_words() -> tuple[ByteArr, ByteArr]:
+def load_words() -> ByteArr:
     """Load the dictionary array (n,) and targets from words list."""
-    words = _load_txt(_RESOURCE_DIR / "words.txt")
-    targets = _load_txt(_RESOURCE_DIR / "targets.txt")
-    assert np.all(np.isin(targets, words)), "Targets must be subset of words"
-    return words, targets
+    return _load_txt(_WORDS_FILE)
+
+
+def load_targets() -> ByteArr:
+    """Load the targets subset (n,) from targets list."""
+    return _load_txt(_RESOURCE_DIR / "targets.txt")
 
 
 def load_patterns() -> ByteGrid:
@@ -98,10 +103,10 @@ def log_initial_assistance(infolen: int, *, targeted: bool) -> None:
     print(pd.DataFrame(np.round(gs_df[key], 3))[:infolen])
 
 
-def compile_patterns(words: ByteArr) -> None:
-    """Compile and cache pattern combinations for every pairing.
+def build_patterns_py(words: ByteArr, *, archive: bool = False) -> None:
+    """Build and cache pattern combinations for every pairing - Python version.
 
-    Save the output patterns to a compressed numpy archive.
+    Save patterns to numpy cache and optional compressed archive.
     """
     logger.info("Cross compiling %d patterns for %d words", words.size**2, words.size)
     cmp_pat = np.vectorize(wordle_compare, otypes=[np.bytes_])
@@ -110,5 +115,26 @@ def compile_patterns(words: ByteArr) -> None:
         patterns: ByteGrid = cmp_pat(words[:, np.newaxis], words, pbar)
     logger.info("Writing patterns to cache %s", _PATTERN_CACHE_FILE)
     np.save(_PATTERN_CACHE_FILE, patterns)
-    logger.info("Writing patterns to archive %s", _PATTERN_ARCHIVE_FILE)
-    np.savez_compressed(_PATTERN_ARCHIVE_FILE, patterns)
+    if archive:
+        logger.info("Writing patterns to archive %s", _PATTERN_ARCHIVE_FILE)
+        np.savez_compressed(_PATTERN_ARCHIVE_FILE, patterns)
+
+
+def build_patterns_native(*, archive: bool = False) -> None:
+    """Build and cache pattern combinations for every pairing - Native version.
+
+    Save patterns to numpy cache and optional compressed archive.
+    """
+    if not _NATIVE_BINARY.exists():
+        logger.info("Binary %s not found. Building with Makefile.", _NATIVE_BINARY)
+        make_release = which("make")
+        assert make_release, "Make is not installed on system."
+        subprocess.run([make_release], check=True)
+    assert _NATIVE_BINARY.exists()
+    logger.info("Cross compiling patterns for dictionary %s", _WORDS_FILE)
+    subprocess.run([_NATIVE_BINARY, _WORDS_FILE, _PATTERN_CACHE_FILE], check=True)
+    logger.info("Finished writing patterns to cache %s", _PATTERN_CACHE_FILE)
+    if archive:
+        patterns: ByteGrid = np.load(_PATTERN_CACHE_FILE)
+        logger.info("Writing patterns to archive %s", _PATTERN_ARCHIVE_FILE)
+        np.savez_compressed(_PATTERN_ARCHIVE_FILE, patterns)

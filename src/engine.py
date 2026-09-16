@@ -38,6 +38,9 @@ class Engine:
         self.targets = targets
         self.ranker = ranker
 
+        if targets:
+            assert np.all(np.isin(targets, words)), "Targets must be subset of words"
+
         logger.info("Retrieving Zipf frequency for words")
         freq_vec = np.vectorize(partial(zipf_frequency, lang="en"), otypes=[np.float64])
         self.log_freq = pd.DataFrame(

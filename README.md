@@ -176,7 +176,9 @@ Two operations that come up again and again are:
 
 Producing square patterns follows a procedure that is difficult to vectorize in numpy. If you're interested, see `wordle_compare` in `src/constants.py`. Since our dictionary is known ahead of time, we should not repeatedly compute these values at runtime. Instead, cache a square matrix *C* of dimension |*W*| where `C[i, j]` is the square pattern when guessing $w_i$ with solution $w_j$. This immediately solves the first operation with a simple index lookup. We can use it to solve the second operation by masking where the row `C[i, :]` is equal to the square pattern, i.e. `w[C[i, :] == s]` returns all compatibilities.
 
-This pre-compilation step takes around an hour on my machine. If you swap out the dictionary, use `compile_patterns` in `src/cache.py`. The resulting pattern matrix is cached at 2 levels.
+### Archival
+
+The pattern matrix is cached and archived at 2 levels.
 
 1. Fast access stored in an uncompressed `.npy` binary file that is generated on access. Used by default and takes up a lot of space.
 2. Github storage in a compressed `.npz` zipped archive that is split across partitions in `bin/` to work around the large file size cap.
@@ -208,6 +210,19 @@ split -d -n {n_parts} resources/patterns.npz bin/part_
 ```
 
 for an appropriate `n_parts` such that each partition is sufficiently small.
+
+### Generating Patterns
+
+The pattern cache must be re-built every time the dictionary is changed, i.e. `resources/words.txt`. There are 2 options for this pre-compilation step in `src/cache.py`. Both construct a `.npy` cache file and offer an optional `.npz` compression.
+
+1. `build_patterns_py` is implemented in pure Python and Numpy. This option has no external dependencies. However, it can take a very long time for large dictionaries.
+2. `build_patterns_native` is implemented in optimized C++. Python delegates the work to the native binary. This option requires a compiler toolchain. However, it's blazing fast even for large dictionaries.
+
+The source files for `build_patterns_native` are stored in the `native` directory and can be compiled with the included `Makefile`. Run the binary as a stand-alone program with:
+
+```shell
+./build/patterns resources/words.txt resources/patterns.npy
+```
 
 ### Generating Recommendations
 

@@ -13,8 +13,7 @@ from src import ByteArr, ByteGrid, Engine, Game, Ranker, load_patterns, load_wor
 @pytest.fixture(scope="session")
 def words() -> ByteArr:
     """Provide singleton word list."""
-    words, _ = load_words()
-    return words
+    return load_words()
 
 
 @pytest.fixture(scope="session")

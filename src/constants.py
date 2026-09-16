@@ -56,23 +56,17 @@ def wordle_compare(
     answer_np: ByteArr = np.frombuffer(answer, dtype="S1")
     squares: ByteArr = np.full_like(guess_np, b"b", dtype="S1")
 
-    # Green is the easiest case to handle by position.
-    # not_green is used as a mask in further processing.
-    not_green = guess_np != answer_np
-    squares[~not_green] = b"g"
+    # Mark green squares by position matching.
+    mismatch = guess_np != answer_np
+    squares[~mismatch] = b"g"
 
-    # Count times n a letter in a non-green guess spot occurs in answer.
-    # Color the first (up to) n occurrences of the letter yellow in guess.
-    for cand in np.unique(guess_np[not_green]):
-        # For every distinct character in guess not in a green spot,
-        # get the number of times it appears in a non green answer spot.
-        cand_count = np.count_nonzero(answer_np[not_green] == cand)
-        # Mask for where this character appears in guess.
-        matching_spots = guess_np == cand
-        # Get indices where both not green and guess matches character.
-        possible_idx = np.where(not_green & matching_spots)[0]
-        # Make all of those indices up to cand_count yellow.
-        squares[possible_idx[:cand_count]] = b"y"
+    # Iterate over unique non-green letters in guess.
+    for letter in np.unique(guess_np[mismatch]):
+        # Count non-green appearances of letter in answer.
+        max_yellow = np.count_nonzero(answer_np[mismatch] == letter)
+        # Color up to max_yellow squares where guess matches letter.
+        possible_idx = np.where(mismatch & (guess_np == letter))[0]
+        squares[possible_idx[:max_yellow]] = b"y"
 
     if pbar:
         pbar.update(1)
