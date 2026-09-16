@@ -16,12 +16,13 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
     """Play a single round. Returns whether player won."""
     try:
         user_guess = input("\nGuess: ")
-        squares, is_win = game.guess_is_win(user_guess)
+        user_bytes = user_guess.encode("ascii")
+        squares, is_win = game.guess_is_win(user_bytes)
         if is_win:
             return True
-        engine.feedback(user_guess, squares)
+        engine.feedback(user_bytes, squares)
         engine.log_assistance(infolen)
-    except AssertionError as err:
+    except (AssertionError, UnicodeEncodeError) as err:
         logger.warning(err)
     return False
 
@@ -56,7 +57,7 @@ def main(solution: str | None, infolen: int, *, verbose: bool) -> None:
     game = Game(words, patterns)
     ranker = Ranker(words, patterns)
     engine = Engine(words, ranker)
-    game.set_solution(solution)
+    game.set_solution(solution.encode("ascii") if solution else None)
 
     if infolen > 0:
         log_initial_assistance(infolen, targeted=False)

@@ -182,21 +182,17 @@ This pre-compilation step takes around an hour on my machine. If you swap out th
 2. Github storage in a compressed `.npz` zipped archive that is split across partitions in `bin/` to work around the large file size cap.
 
 ```text
-$ du -h resources/*patterns.np*
-4.2G   resources/patterns.npy
-178M   resources/patterns.npz
+$ du -h resources/patterns.np*
+1.1G   resources/patterns.npy
+127M   resources/patterns.npz
 
 $ du -h bin/*
-18M   bin/part_00
-18M   bin/part_01
-18M   bin/part_02
-18M   bin/part_03
-18M   bin/part_04
-18M   bin/part_05
-18M   bin/part_06
-18M   bin/part_07
-18M   bin/part_08
-18M   bin/part_09
+22M   bin/part_00
+22M   bin/part_01
+22M   bin/part_02
+22M   bin/part_03
+22M   bin/part_04
+22M   bin/part_05
 ```
 
 You can manually create the `.npz` archive from the partitions by running
@@ -208,8 +204,10 @@ cat bin/part_* > resources/patterns.npz
 Using an existing `.npz` archive, you can manually create the partitions by running
 
 ```shell
-split -d -n 10 resources/patterns.npz bin/part_
+split -d -n {n_parts} resources/patterns.npz bin/part_
 ```
+
+for an appropriate `n_parts` such that each partition is sufficiently small.
 
 ### Generating Recommendations
 

@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from .constants import StrArr, StrGrid, wordle_compare
+from .constants import ByteArr, ByteGrid, wordle_compare
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +24,9 @@ _PATTERN_ARCHIVE_FILE = _RESOURCE_DIR / "patterns.npz"
 _PATTERN_CACHE_FILE = _RESOURCE_DIR / "patterns.npy"
 
 
-def _load_txt(fpath: Path) -> StrArr:
+def _load_txt(fpath: Path) -> ByteArr:
     """Load words from a text file and validate properties."""
-    words = np.loadtxt(fpath, dtype=np.str_)
+    words = np.loadtxt(fpath, dtype=np.bytes_)
     len_vec = np.vectorize(len, otypes=[np.int_])
     unique_lens = np.unique(len_vec(words))
     assert unique_lens.size == 1, f"Words in {fpath} must have uniform length"
@@ -40,7 +40,7 @@ def _load_txt(fpath: Path) -> StrArr:
     return words
 
 
-def load_words() -> tuple[StrArr, StrArr]:
+def load_words() -> tuple[ByteArr, ByteArr]:
     """Load the dictionary array (n,) and targets from words list."""
     words = _load_txt(_RESOURCE_DIR / "words.txt")
     targets = _load_txt(_RESOURCE_DIR / "targets.txt")
@@ -48,11 +48,11 @@ def load_words() -> tuple[StrArr, StrArr]:
     return words, targets
 
 
-def load_patterns() -> StrGrid:
+def load_patterns() -> ByteGrid:
     """Load already compiled patterns (n, n) from archive."""
     if _PATTERN_CACHE_FILE.exists():
         logger.info("Loading pre-compiled cache %s", _PATTERN_CACHE_FILE)
-        return cast("StrGrid", np.load(_PATTERN_CACHE_FILE))
+        return cast("ByteGrid", np.load(_PATTERN_CACHE_FILE))
     logger.info("No pattern cache %s found", _PATTERN_CACHE_FILE)
 
     if not _PATTERN_ARCHIVE_FILE.exists():
@@ -72,7 +72,7 @@ def load_patterns() -> StrGrid:
                     copyfileobj(fsrc, fdst)
 
     logger.info("Loading pre-compiled archive %s", _PATTERN_ARCHIVE_FILE)
-    patterns = cast("StrGrid", np.load(_PATTERN_ARCHIVE_FILE)["arr_0"])
+    patterns = cast("ByteGrid", np.load(_PATTERN_ARCHIVE_FILE)["arr_0"])
     logger.info("Writing patterns to cache %s", _PATTERN_CACHE_FILE)
     np.save(_PATTERN_CACHE_FILE, patterns)
     return patterns
@@ -98,7 +98,7 @@ def log_initial_assistance(infolen: int, *, targeted: bool) -> None:
     print(pd.DataFrame(np.round(gs_df[key], 3))[:infolen])
 
 
-def compile_patterns(words: StrArr) -> None:
+def compile_patterns(words: ByteArr) -> None:
     """Compile and cache pattern combinations for every pairing.
 
     Save the output patterns to a compressed numpy archive.
@@ -107,7 +107,7 @@ def compile_patterns(words: StrArr) -> None:
     cmp_pat = np.vectorize(wordle_compare, otypes=[str])
     with tqdm(total=words.size**2) as pbar:
         # Matrix multiply vectorization magic.
-        patterns: StrGrid = cmp_pat(words[:, np.newaxis], words, pbar)
+        patterns: ByteGrid = cmp_pat(words[:, np.newaxis], words, pbar)
     logger.info("Writing patterns to cache %s", _PATTERN_CACHE_FILE)
     np.save(_PATTERN_CACHE_FILE, patterns)
     logger.info("Writing patterns to archive %s", _PATTERN_ARCHIVE_FILE)

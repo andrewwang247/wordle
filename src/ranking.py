@@ -13,7 +13,7 @@ import pandas as pd
 from scipy.stats import entropy
 
 if TYPE_CHECKING:
-    from .constants import StrArr, StrGrid
+    from .constants import ByteArr, ByteGrid
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ type BoolArr = np.ndarray[tuple[int], np.dtype[np.bool_]]
 type FloatArr = np.ndarray[tuple[int], np.dtype[np.float64]]
 
 
-def _unroll_counts(row: StrArr) -> IntArr:
+def _unroll_counts(row: ByteArr) -> IntArr:
     """Convert a row into unique counts with zero padding."""
     unique_counts = np.array(list(Counter(row).values()), dtype=np.int_)
     # Pad all to same length so we can apply along axis.
@@ -36,8 +36,8 @@ class Ranker:
 
     def __init__(
         self,
-        words: StrArr,
-        patterns: StrGrid,
+        words: ByteArr,
+        patterns: ByteGrid,
     ) -> None:
         """Construct with references to immutable data."""
         self.words = words  # (n,)
@@ -55,9 +55,9 @@ class Ranker:
         print(f"Remaining uncertainty: {uncertainty:.2f} bits")
         return total_reachable, uncertainty
 
-    def update(self, guess: str, squares: str) -> None:
+    def update(self, guess: bytes, squares: bytes) -> None:
         """Update internal state with guess and squares result."""
-        assert guess in self.index, f"{guess} is not in dictionary."
+        assert guess in self.index, f"{guess.decode()} is not in dictionary."
         logger.info("Updating internal state with new information")
         idx = self.index.get_loc(guess)
         squares_non_match = self.patterns[idx, :] != squares
@@ -65,7 +65,7 @@ class Ranker:
 
     def informative_guesses(
         self,
-    ) -> tuple[StrArr, FloatArr]:
+    ) -> tuple[ByteArr, FloatArr]:
         """Rank the probabilistic quality of guesses by entropy (in bits)."""
         # All guesses (axis 0) are included. Exclude unreachable candidates.
         logger.info("Sorting informative guesses by entropy")
@@ -75,7 +75,7 @@ class Ranker:
         sorted_idx = np.argsort(entropies)[::-1]
         return self.words[sorted_idx], entropies[sorted_idx]
 
-    def manual_prune(self, targets: StrArr) -> None:
+    def manual_prune(self, targets: ByteArr) -> None:
         """Mark all targets as not reachable."""
         logger.info("Marking all target as unreachable")
         mask = np.isin(self.words, targets)

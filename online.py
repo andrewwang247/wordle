@@ -11,7 +11,6 @@ from src import (
     Engine,
     Game,
     Ranker,
-    convert_squares,
     load_patterns,
     load_words,
     log_initial_assistance,
@@ -23,14 +22,13 @@ logger = logging.getLogger(__name__)
 def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
     """Play a single round. Returns whether player won."""
     try:
-        user_guess = input("\nGuess: ")
-        user_response = input("Squares: ")
-        squares = convert_squares(user_response)
-        if game.append_is_win(user_guess, squares):
+        guess = input("\nGuess: ").encode("ascii")
+        squares = input("Squares: ").encode("ascii")
+        if game.append_is_win(guess, squares):
             return True
-        engine.feedback(user_guess, squares)
+        engine.feedback(guess, squares)
         engine.log_assistance(infolen)
-    except AssertionError as err:
+    except (AssertionError, UnicodeEncodeError) as err:
         logger.warning(err)
     return False
 

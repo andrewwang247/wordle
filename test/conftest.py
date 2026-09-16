@@ -7,24 +7,24 @@ from math import log2
 
 import pytest
 
-from src import Engine, Game, Ranker, StrArr, StrGrid, load_patterns, load_words
+from src import ByteArr, ByteGrid, Engine, Game, Ranker, load_patterns, load_words
 
 
 @pytest.fixture(scope="session")
-def words() -> StrArr:
+def words() -> ByteArr:
     """Provide singleton word list."""
     words, _ = load_words()
     return words
 
 
 @pytest.fixture(scope="session")
-def patterns() -> StrGrid:
+def patterns() -> ByteGrid:
     """Provide singleton precomputed patterns."""
     return load_patterns()
 
 
 @pytest.fixture
-def game(words: StrArr, patterns: StrGrid) -> Game:
+def game(words: ByteArr, patterns: ByteGrid) -> Game:
     """Create starting game for all tests."""
     game = Game(words, patterns)
     assert game.current_round() == 0
@@ -32,7 +32,7 @@ def game(words: StrArr, patterns: StrGrid) -> Game:
 
 
 @pytest.fixture
-def ranker(words: StrArr, patterns: StrGrid) -> Ranker:
+def ranker(words: ByteArr, patterns: ByteGrid) -> Ranker:
     """Create new ranker for all test."""
     ranker = Ranker(words, patterns)
     reachable, uncertainty = ranker.remaining_state()
@@ -43,6 +43,6 @@ def ranker(words: StrArr, patterns: StrGrid) -> Ranker:
 
 
 @pytest.fixture
-def engine(words: StrArr, ranker: Ranker) -> Engine:
+def engine(words: ByteArr, ranker: Ranker) -> Engine:
     """Create new engine for each test."""
     return Engine(words, ranker)

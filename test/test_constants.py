@@ -5,7 +5,7 @@ Copyright 2026. Andrew Wang.
 
 import pytest
 
-from src import convert_squares, wordle_compare
+from src import wordle_compare
 
 
 def _get_comparisons() -> list[tuple[str, str, str]]:
@@ -25,4 +25,4 @@ def _get_comparisons() -> list[tuple[str, str, str]]:
 def test_compare(guess: str, solution: str, squares: str) -> None:
     """Test square generation from word pairs."""
     actual = wordle_compare(guess, solution)
-    assert actual == convert_squares(squares)
+    assert actual == squares
