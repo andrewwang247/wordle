@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 
   const auto words = wordle::read_words(argv[1]);
   ofstream fout{argv[2]};
-  numpy::write_header(fout);
+  numpy::write_header(fout, wordle::WORD_LEN, wordle::NUM_WORDS);
 
   for (const string_view guess : words) {
     for (const string_view answer : words) {
