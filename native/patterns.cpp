@@ -20,13 +20,15 @@ int main(int argc, char* argv[]) {
   }
 
   const auto words = wordle::read_words(argv[1]);
+  const auto len = wordle::uniform_length(words);
+
   ofstream fout{argv[2]};
-  numpy::write_header(fout, wordle::WORD_LEN, wordle::NUM_WORDS);
+  numpy::write_header(fout, len, words.size());
 
   for (const string_view guess : words) {
     for (const string_view answer : words) {
-      const auto squares = wordle::compare(guess, answer);
-      fout.write(squares.data(), wordle::WORD_LEN);
+      const auto squares = wordle::compare(guess, answer, len);
+      fout.write(squares.data(), static_cast<int>(len));
     }
   }
 }
