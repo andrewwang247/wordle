@@ -4,11 +4,12 @@ Copyright 2026. Andrew Wang.
 """
 
 import logging
+from typing import cast
 
 import numpy as np
 import pandas as pd
 
-from .constants import Square, StrArr, StrGrid
+from .constants import ByteArr, ByteGrid, Square, convert_squares
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +22,8 @@ class Game:
 
     def __init__(
         self,
-        words: StrArr,
-        patterns: StrGrid,
+        words: ByteArr,
+        patterns: ByteGrid,
     ) -> None:
         """Initialize game with references to immutable data and a solution."""
         # Fast way to index given a word.
@@ -30,15 +31,15 @@ class Game:
         self.patterns = patterns
 
         # Null initialize parameters after we have a solution set
-        self.solution: str | None = None
+        self.solution: bytes | None = None
         self.sol_idx = 0
-        self.guess_hist: list[str] = []
-        self.square_hist: list[str] = []
+        self.guess_hist: list[bytes] = []
+        self.square_hist: list[bytes] = []
 
-    def set_solution(self, solution: str | None = None) -> None:
+    def set_solution(self, solution: bytes | None = None) -> None:
         """Initialize game with a given (or random) solution."""
         if solution:
-            assert solution in self.index, f"{solution} is not in dictionary."
+            assert solution in self.index, f"{solution.decode()} is not in dictionary."
             self.solution = solution
         else:
             self.solution = _RNG.choice(self.index)
@@ -55,36 +56,36 @@ class Game:
         """Return the current round number."""
         return len(self.guess_hist)
 
-    def append_is_win(self, word: str, squares: str) -> bool:
+    def append_is_win(self, word: bytes, squares: bytes) -> bool:
         """Process a guess and response. Return if this is a win."""
-        assert word in self.index, f"{word} is not in dictionary."
+        assert word in self.index, f"{word.decode()} is not in dictionary."
         assert len(word) == len(squares), (
             f"Mismatched lengths: guess {len(word)} and square {len(squares)}"
         )
-        assert all(sq in _SQUARE_VALUES for sq in squares), (
-            f"{squares} is an invalid pattern"
+        assert all(sq in {ord("g"), ord("y"), ord("b")} for sq in squares), (
+            f"{squares.decode()} is an invalid pattern"
         )
         self.guess_hist.append(word)
         self.square_hist.append(squares)
         round_number = self.current_round()
-        print(f"Round {round_number}: {word} {squares}")
-        is_win = all(sq == Square.GREEN.value for sq in squares)
+        print(f"Round {round_number}: {word.decode()} {convert_squares(squares)}")
+        is_win = all(sq == ord("g") for sq in squares)
         if not is_win:
             return False
         if self.solution:
             assert word == self.solution, (
-                f"Word {word} does not match solution {self.solution}."
+                f"Word {word.decode()} does not match {self.solution.decode()}."
             )
         else:
             self.solution = word
         print(f"Completed game in {round_number} rounds")
         return True
 
-    def guess_is_win(self, word: str) -> tuple[str, bool]:
+    def guess_is_win(self, word: bytes) -> tuple[bytes, bool]:
         """Process a guess and return the square combo + win state."""
         assert self.solution, "Solution was not defined."
-        assert word in self.index, f"{word} is not in dictionary."
+        assert word in self.index, f"{word.decode()} is not in dictionary."
         gs_idx = self.index.get_loc(word)
-        result = str(self.patterns[gs_idx, self.sol_idx])
+        result = cast("bytes", self.patterns[gs_idx, self.sol_idx])
         is_win = self.append_is_win(word, result)
         return result, is_win

@@ -12,8 +12,8 @@ import numpy as np
 if TYPE_CHECKING:
     from tqdm import tqdm
 
-type StrArr = np.ndarray[tuple[int], np.dtype[np.str_]]
-type StrGrid = np.ndarray[tuple[int, int], np.dtype[np.str_]]
+type ByteArr = np.ndarray[tuple[int], np.dtype[np.bytes_]]
+type ByteGrid = np.ndarray[tuple[int, int], np.dtype[np.bytes_]]
 
 logger = logging.getLogger(__name__)
 
@@ -26,16 +26,16 @@ class Square(Enum):
     GREEN = "\U0001f7e9"
 
 
-def convert_squares(user_str: str) -> str:
+def convert_squares(squares: bytes) -> str:
     """Convert convenience string of b, y, and g into squares."""
     values = []
-    for letter in user_str:
-        assert letter in ("b", "y", "g"), (
-            f"Unrecognized character {letter} in squares string"
+    for sq in squares:
+        assert sq in {ord("g"), ord("y"), ord("b")}, (
+            f"Unrecognized character {sq} in squares"
         )
-        if letter == "b":
+        if sq == ord("b"):
             values.append(Square.BLACK.value)
-        elif letter == "y":
+        elif sq == ord("y"):
             values.append(Square.YELLOW.value)
         else:
             values.append(Square.GREEN.value)
@@ -54,12 +54,12 @@ def wordle_compare(
     assert len(guess) == len(answer), "Guess and answer must have matching lengths"
     guess_np = np.fromiter(guess, dtype="<1U")
     answer_np = np.fromiter(answer, dtype="<1U")
-    squares = np.full_like(guess_np, Square.BLACK.value, dtype="<1U")
+    squares = np.full_like(guess_np, "b", dtype="<1U")
 
     # Green is the easiest case to handle by position.
     # The mask gm is used to remove them in further processing.
     not_green = guess_np != answer_np
-    squares[~not_green] = Square.GREEN.value
+    squares[~not_green] = "g"
 
     # We need to get the number (n) of times a guess letter in
     # a non-green spot occurs in expected. From there, we color
@@ -73,7 +73,7 @@ def wordle_compare(
         # Get indices where both not green and guess matches character.
         possible_idx = np.where(not_green & matching_spots)[0]
         # Make all of those indices up to cand_count yellow.
-        squares[possible_idx[:cand_count]] = Square.YELLOW.value
+        squares[possible_idx[:cand_count]] = "y"
 
     if pbar:
         pbar.update(1)

@@ -4,10 +4,12 @@ Copyright 2026. Andrew Wang.
 """
 
 from math import log2
+from typing import TYPE_CHECKING
 
 import pytest
 
-from src import Ranker, convert_squares
+if TYPE_CHECKING:
+    from src import Ranker
 
 
 def _get_rankings() -> list[tuple[list[str], list[str], list[int], list[str | None]]]:
@@ -34,7 +36,7 @@ def _get_rankings() -> list[tuple[list[str], list[str], list[int], list[str | No
 def test_invalid(ranker: Ranker) -> None:
     """Test rankings with invalid inputs."""
     with pytest.raises(AssertionError):
-        ranker.update("abcde", convert_squares("bgygb"))
+        ranker.update(b"abcde", b"bgygb")
 
 
 @pytest.mark.parametrize(
@@ -51,10 +53,10 @@ def test_game(
     for gs, sq, remain, suggested in zip(
         guesses, squares, remainder, informative, strict=True
     ):
-        ranker.update(gs, convert_squares(sq))
+        ranker.update(gs.encode("ascii"), sq.encode("ascii"))
         actual_reachable, uncertainty = ranker.remaining_state()
         assert actual_reachable == remain
         assert uncertainty == log2(remain)
         if suggested:
             actual_guesses, _ = ranker.informative_guesses()
-            assert actual_guesses[0] == suggested
+            assert actual_guesses[0] == suggested.encode("ascii")

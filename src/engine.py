@@ -14,13 +14,13 @@ from wordfreq import zipf_frequency
 from .game import Game
 
 if TYPE_CHECKING:
-    from .constants import StrArr
+    from .constants import ByteArr
     from .ranking import Ranker
 
 logger = logging.getLogger(__name__)
 
-_BEST_OPENER = "tares"
-_BEST_TARGETED_OPENER = "tarse"
+_BEST_OPENER = b"tares"
+_BEST_TARGETED_OPENER = b"tarse"
 _STRATEGY_PHASE_SWITCH = 2
 
 
@@ -29,9 +29,9 @@ class Engine:
 
     def __init__(
         self,
-        words: StrArr,
+        words: ByteArr,
         ranker: Ranker,
-        targets: StrArr | None = None,
+        targets: ByteArr | None = None,
     ) -> None:
         """Construct with ranker to help decide next guess."""
         self.words = words
@@ -39,9 +39,9 @@ class Engine:
         self.ranker = ranker
 
         logger.info("Retrieving Zipf frequency for words")
-        freq_vec = np.vectorize(partial(zipf_frequency, lang="en"), otypes=[float])
+        freq_vec = np.vectorize(partial(zipf_frequency, lang="en"), otypes=[np.float64])
         self.log_freq = pd.DataFrame(
-            data=freq_vec(words),
+            data=freq_vec(words.astype(np.str_)),
             index=words,
             columns=["log_freq"],
         )
@@ -56,7 +56,7 @@ class Engine:
         self.reachable_hist = [reachable]
         self.uncertainty_hist = [uncertainty]
 
-    def feedback(self, guess: str, squares: str) -> None:
+    def feedback(self, guess: bytes, squares: bytes) -> None:
         """Update internal state with guess and squares result."""
         assert len(guess) == len(squares), (
             f"Mismatched lengths: guess {len(guess)} and square {len(squares)}"
@@ -76,27 +76,28 @@ class Engine:
             logger.info("Infolen %d <= 0. Skip logging assistance.", infolen)
             return
         pos_df = self._likely_solutions()
+        pos_df.index = pos_df.index.str.decode("ascii")
         print("Likely solutions")
         print(pos_df[:infolen])
         guesses, entrops = self.ranker.informative_guesses()
         gs_df = pd.DataFrame(
             data=np.round(entrops, 3),
-            index=guesses,
+            index=guesses.astype(np.str_),
             columns=["entropy"],
         )
         print("Informative guesses")
         print(gs_df[:infolen])
 
-    def simulate(self, solution: str) -> Game:
+    def simulate(self, solution: bytes) -> Game:
         """Simulate playing with defined solution. Return constructed game."""
         announcement = "Simulating engine game with solution"
         print("=" * (len(announcement) + 1 + len(solution)))
-        print(f"{announcement} {solution}")
+        print(f"{announcement} {solution.decode()}")
         game = Game(self.words, self.ranker.patterns)
         game.set_solution(solution)
         if self.targets:
             assert solution in self.targets, (
-                f"{solution} is not in provided targets sub-list"
+                f"{solution.decode()} is not in provided targets sub-list"
             )
             self.ranker.manual_prune(self.targets)
         while True:
@@ -121,7 +122,7 @@ class Engine:
         subset = self.log_freq.loc[possible]  # type: ignore[index]
         return subset.sort_values(by="log_freq", ascending=False)
 
-    def _make_guess(self, round_num: int) -> str:
+    def _make_guess(self, round_num: int) -> bytes:
         """Decide on the optimal next guess."""
         if round_num == 0:
             logger.info("Using cached opener to speed things up.")
@@ -131,8 +132,8 @@ class Engine:
             logger.info("Reached endgame. Choosing likely solution to win.")
             solutions = self._likely_solutions()
             assert solutions.size > 0, "Could not find likely solutions."
-            return cast("str", solutions.index[0])
+            return cast("bytes", solutions.index[0])
         logger.info("Choosing highest entropy guess to prune state space.")
         guesses = self.ranker.informative_guesses()[0]
         assert guesses.size > 0, "Could not find informative guesses."
-        return cast("str", guesses[0])
+        return cast("bytes", guesses[0])

@@ -27,8 +27,8 @@ def test_simulate(engine: Engine, history: list[str | None]) -> None:
     """Simulate engine games and validate history."""
     solution = history[-1]
     assert solution, "Final word cannot be any."
-    game = engine.simulate(solution)
+    game = engine.simulate(solution.encode("ascii"))
     for guessed, expected in zip(game.guess_hist, history, strict=True):
         if not expected:
             continue
-        assert guessed == expected
+        assert guessed == expected.encode("ascii")
