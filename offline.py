@@ -52,7 +52,7 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
 def main(solution: str | None, infolen: int, *, verbose: bool) -> None:
     """Play Wordle with a provided or random solution."""
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
-    words, _ = load_words()
+    words = load_words()
     patterns = load_patterns()
     game = Game(words, patterns)
     ranker = Ranker(words, patterns)

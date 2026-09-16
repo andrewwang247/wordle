@@ -20,7 +20,7 @@ target-version = "py314"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["COM812", "S101", "T201"]
+ignore = ["COM812", "S101", "S603", "T201"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

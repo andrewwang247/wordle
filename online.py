@@ -12,6 +12,7 @@ from src import (
     Game,
     Ranker,
     load_patterns,
+    load_targets,
     load_words,
     log_initial_assistance,
 )
@@ -58,11 +59,11 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
 def main(infolen: int, *, targeted: bool, verbose: bool) -> None:
     """Play Wordle with an unknown solution."""
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
-    words, targets = load_words()
+    words = load_words()
     patterns = load_patterns()
     game = Game(words, patterns)
     ranker = Ranker(words, patterns)
-    engine = Engine(words, ranker, targets if targeted else None)
+    engine = Engine(words, ranker, load_targets() if targeted else None)
 
     if infolen > 0:
         log_initial_assistance(infolen, targeted=targeted)
