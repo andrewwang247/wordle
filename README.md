@@ -181,32 +181,32 @@ Producing square patterns follows a procedure that is difficult to vectorize in 
 The pattern matrix is cached and archived at 2 levels.
 
 1. Fast access stored in an uncompressed `.npy` binary file that is generated on access. Used by default and takes up a lot of space.
-2. Github storage in a compressed `.npz` zipped archive that is split across partitions in `bin/` to work around the large file size cap.
+2. Github storage in a compressed `.npz` zipped archive that is split across partitions in `archive` to work around the large file size cap.
 
 ```text
 $ du -h resources/patterns.np*
 1.1G   resources/patterns.npy
 127M   resources/patterns.npz
 
-$ du -h bin/*
-22M   bin/part_00
-22M   bin/part_01
-22M   bin/part_02
-22M   bin/part_03
-22M   bin/part_04
-22M   bin/part_05
+$ du -h archive/*
+22M   archive/part_00
+22M   archive/part_01
+22M   archive/part_02
+22M   archive/part_03
+22M   archive/part_04
+22M   archive/part_05
 ```
 
 You can manually create the `.npz` archive from the partitions by running
 
 ```shell
-cat bin/part_* > resources/patterns.npz
+cat archive/* > resources/patterns.npz
 ```
 
 Using an existing `.npz` archive, you can manually create the partitions by running
 
 ```shell
-split -d -n {n_parts} resources/patterns.npz bin/part_
+split -d -n {n_parts} resources/patterns.npz archive/part_
 ```
 
 for an appropriate `n_parts` such that each partition is sufficiently small.

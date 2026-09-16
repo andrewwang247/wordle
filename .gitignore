@@ -4,6 +4,7 @@
 !*.*
 !Makefile
 !LICENSE
+!archive/*
 
 # Python
 *.pyc
