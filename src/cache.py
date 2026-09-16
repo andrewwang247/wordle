@@ -19,7 +19,7 @@ from .constants import ByteArr, ByteGrid, wordle_compare
 
 logger = logging.getLogger(__name__)
 
-_CHUNK_DIR = Path("bin")
+_CHUNK_DIR = Path("archive")
 _RESOURCE_DIR = Path("resources")
 _PATTERN_ARCHIVE_FILE = _RESOURCE_DIR / "patterns.npz"
 _PATTERN_CACHE_FILE = _RESOURCE_DIR / "patterns.npy"
