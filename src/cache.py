@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 _CHUNK_DIR = Path("bin")
 _RESOURCE_DIR = Path("resources")
-_WORDS_FILE = _RESOURCE_DIR / "words.txt"
 _PATTERN_ARCHIVE_FILE = _RESOURCE_DIR / "patterns.npz"
 _PATTERN_CACHE_FILE = _RESOURCE_DIR / "patterns.npy"
 _NATIVE_BINARY = Path("build/patterns")
@@ -45,7 +44,7 @@ def _load_txt(fpath: Path) -> ByteArr:
 
 def load_words() -> ByteArr:
     """Load the dictionary array (n,) and targets from words list."""
-    return _load_txt(_WORDS_FILE)
+    return _load_txt(_RESOURCE_DIR / "words.txt")
 
 
 def load_targets() -> ByteArr:
@@ -120,7 +119,7 @@ def build_patterns_py(words: ByteArr, *, archive: bool = False) -> None:
         np.savez_compressed(_PATTERN_ARCHIVE_FILE, patterns)
 
 
-def build_patterns_native(*, archive: bool = False) -> None:
+def build_patterns_native(word_file: Path, *, archive: bool = False) -> None:
     """Build and cache pattern combinations for every pairing - Native version.
 
     Save patterns to numpy cache and optional compressed archive.
@@ -131,8 +130,8 @@ def build_patterns_native(*, archive: bool = False) -> None:
         assert make_release, "Make is not installed on system."
         subprocess.run([make_release], check=True)
     assert _NATIVE_BINARY.exists()
-    logger.info("Cross compiling patterns for dictionary %s", _WORDS_FILE)
-    subprocess.run([_NATIVE_BINARY, _WORDS_FILE, _PATTERN_CACHE_FILE], check=True)
+    logger.info("Cross compiling patterns for dictionary %s", word_file)
+    subprocess.run([_NATIVE_BINARY, word_file, _PATTERN_CACHE_FILE], check=True)
     logger.info("Finished writing patterns to cache %s", _PATTERN_CACHE_FILE)
     if archive:
         patterns: ByteGrid = np.load(_PATTERN_CACHE_FILE)

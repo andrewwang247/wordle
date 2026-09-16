@@ -215,7 +215,7 @@ for an appropriate `n_parts` such that each partition is sufficiently small.
 
 The pattern cache must be re-built every time the dictionary is changed, i.e. `resources/words.txt`. There are 2 options for this pre-compilation step in `src/cache.py`. Both construct a `.npy` cache file and offer an optional `.npz` compression.
 
-1. `build_patterns_py` is implemented in pure Python and Numpy. This option has no external dependencies. However, it can take a very long time for large dictionaries.
+1. `build_patterns_py` is implemented in pure Python and Numpy. This option has no external dependencies. However, it can take orders of magnitude longer for large dictionaries compared to the native option.
 2. `build_patterns_native` is implemented in optimized C++. Python delegates the work to the native binary. This option requires a compiler toolchain. However, it's blazing fast even for large dictionaries.
 
 The source files for `build_patterns_native` are stored in the `native` directory and can be compiled with the included `Makefile`. Run the binary as a stand-alone program with:
