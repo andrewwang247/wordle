@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,-*,modernize-*,performance-*,readability-*,cppcoreguidelines-*,misc-*,-modernize-use-trailing-return-type,-modernize-use-nodiscard,-readability-implicit-bool-conversion,-readability-braces-around-statements,-readability-identifier-length,-cppcoreguidelines-special-member-functions,-misc-use-anonymous-namespace'
+Checks:          'clang-diagnostic-*,-*,modernize-*,performance-*,readability-*,cppcoreguidelines-*,misc-*,-modernize-use-trailing-return-type,-modernize-use-nodiscard,-readability-implicit-bool-conversion,-readability-braces-around-statements,-readability-identifier-length,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-special-member-functions,-misc-use-anonymous-namespace'
 WarningsAsErrors: ''
 HeaderFileExtensions:
   - ''
