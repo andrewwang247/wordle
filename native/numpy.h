@@ -8,6 +8,9 @@ Copyright 2026. Andrew Wang.
 #include <fstream>
 #include <string_view>
 
+/**
+ * @brief Interface with Numpy binary format.
+ */
 namespace numpy {
 using std::string_view_literals::operator""sv;
 

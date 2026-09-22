@@ -19,6 +19,7 @@ cppcheck --language=c++ --std=c++23 --quiet \
     --suppress=checkersReport \
     --suppress=missingIncludeSystem \
     --suppress=throwInEntryPoint \
+    --suppress=unusedStructMember \
     $sources
 
 if [[ ! -f "compile_commands.json" ]]; then

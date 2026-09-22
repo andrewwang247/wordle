@@ -8,53 +8,23 @@ Copyright 2026. Andrew Wang.
 #include <algorithm>
 #include <bitset>
 #include <cstddef>
-#include <fstream>
 #include <ranges>
-#include <span>
-#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <vector>
 
 using std::bitset;
 using std::get;
-using std::ifstream;
-using std::invalid_argument;
 using std::size_t;
-using std::span;
 using std::string;
 using std::string_view;
-using std::vector;
 
 namespace ranges = std::ranges;
 namespace views = std::views;
 
-size_t wordle::uniform_length(span<const string> words) {
-  if (words.empty()) throw invalid_argument("Word list is empty");
+wordle::wordle(size_t len) noexcept : m_word_len(len) {}
 
-  const auto first_len = words.front().length();
-  const auto match_first = [first_len](auto word_len) {
-    return word_len == first_len;
-  };
-
-  if (!ranges::all_of(words, match_first, &string::length)) {
-    throw invalid_argument("Words have mismatched lengths");
-  }
-  return first_len;
-}
-
-vector<string> wordle::read_words(string_view fname) {
-  ifstream fin{fname.data()};
-  vector<string> words;
-  for (string word; fin >> word;) {
-    words.emplace_back(word);
-  }
-  return words;
-}
-
-string wordle::compare(string_view guess, string_view answer,
-                       size_t len) noexcept {
-  string squares(len, BLACK);
+string wordle::compare(string_view guess, string_view answer) const noexcept {
+  string squares(m_word_len, BLACK);
   // Mark green squares by position matching.
   for (auto&& [gs, as, sq] : views::zip(guess, answer, squares)) {
     if (gs == as) sq = GREEN;
