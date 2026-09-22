@@ -5,13 +5,14 @@ Copyright 2026. Andrew Wang.
 */
 #pragma once
 #include <cstddef>
+#include <limits>
 #include <span>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace wordle {
-static constexpr auto NUM_CHARS = 1 << 8;
+static constexpr auto NUM_CHARS = std::numeric_limits<unsigned char>::max() + 1;
 static constexpr auto BLACK = 'b', GREEN = 'g', YELLOW = 'y';
 
 /**

@@ -6,9 +6,13 @@ Copyright 2026. Andrew Wang.
 #pragma once
 #include <cstddef>
 #include <fstream>
+#include <string_view>
 
 namespace numpy {
+using std::string_view_literals::operator""sv;
+
 static constexpr auto PAD_ALIGN = 64;
+static constexpr auto MAGIC_VERSION = "\x93NUMPY\x01\x00"sv;
 // NOLINTBEGIN(whitespace/indent_namespace)
 static constexpr auto HEADER_TEMPLATE =
     "{{'descr': '|S{}', 'fortran_order': False, 'shape': ({}, {}), }}";
