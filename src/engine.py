@@ -19,8 +19,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_BEST_OPENER = b"tares"
-_BEST_TARGETED_OPENER = b"tarse"
+BEST_OPENER = b"tares"
+BEST_TARGETED_OPENER = b"tarse"
+
 _STRATEGY_PHASE_SWITCH = 2
 
 
@@ -38,8 +39,11 @@ class Engine:
         self.targets = targets
         self.ranker = ranker
 
-        if targets:
-            assert np.all(np.isin(targets, words)), "Targets must be subset of words"
+        if targets is not None:
+            self.ranker.manual_prune(targets)
+            self.cached_opener = BEST_TARGETED_OPENER
+        else:
+            self.cached_opener = BEST_OPENER
 
         logger.info("Retrieving Zipf frequency for words")
         freq_vec = np.vectorize(partial(zipf_frequency, lang="en"), otypes=[np.float64])
@@ -48,11 +52,6 @@ class Engine:
             index=words,
             columns=["log_freq"],
         )
-        if targets:
-            self.ranker.manual_prune(targets)
-            self.cached_opener = _BEST_TARGETED_OPENER
-        else:
-            self.cached_opener = _BEST_OPENER
 
         # Track the history of reachable counts and entropies
         reachable, uncertainty = self.ranker.remaining_state()
@@ -96,9 +95,9 @@ class Engine:
         announcement = "Simulating engine game with solution"
         print("=" * (len(announcement) + 1 + len(solution)))
         print(f"{announcement} {solution.decode()}")
-        game = Game(self.words, self.ranker.patterns)
+        game = Game(self.words, self.ranker.patterns, self.targets)
         game.set_solution(solution)
-        if self.targets:
+        if self.targets is not None:
             assert solution in self.targets, (
                 f"{solution.decode()} is not in provided targets sub-list"
             )

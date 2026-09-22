@@ -19,6 +19,7 @@ Options:
                                set.
   -l, --infolen INTEGER RANGE  Max # of suggestions to log per round. 0 is no
                                assistance.  [0<=x<=10]
+  -t, --targeted               Whether solution is in known targets sub-list.
   -v, --verbose                Displays application logs if set.
   --help                       Show this message and exit.
 ```
@@ -33,7 +34,7 @@ Usage: online.py [OPTIONS]
 Options:
   -l, --infolen INTEGER RANGE  Max # of suggestions to log per round. 0 is no
                                assistance.  [0<=x<=10]
-  -t, --targeted               Use known targets sub-list to prime engine.
+  -t, --targeted               Whether solution is in known targets sub-list.
   -v, --verbose                Displays application logs if set.
   --help                       Show this message and exit.
 ```

@@ -3,28 +3,45 @@
 Copyright 2026. Andrew Wang.
 """
 
-from typing import TYPE_CHECKING
-
 import pytest
 
-if TYPE_CHECKING:
-    from src import Engine
+from src import BEST_OPENER, BEST_TARGETED_OPENER
 
 
 def _get_histories() -> list[list[bytes | None]]:
     """Retrieve list of game histories. None is a stand-in for any guess."""
     return [
-        [b"tares", b"bound", None, b"fjord"],
-        [b"tares", b"mincy", b"cabin"],
-        [b"tares", b"spite", b"oleum", None, b"stone"],
-        [b"tares", b"spout", None, b"frost"],
-        [b"tares", b"neeld", b"almah", None, b"bleak"],
+        [BEST_OPENER, b"bound", None, b"fjord"],
+        [BEST_OPENER, b"mincy", b"cabin"],
+        [BEST_OPENER, b"spite", b"oleum", None, b"stone"],
+        [BEST_OPENER, b"spout", None, b"frost"],
+        [BEST_OPENER, b"neeld", b"almah", None, b"bleak"],
     ]
 
 
-@pytest.mark.parametrize("history", _get_histories())
-def test_simulate(engine: Engine, history: list[bytes | None]) -> None:
+def _get_targeted_histories() -> list[list[bytes | None]]:
+    """Retrieve list of targeted game histories. None is a stand-in for any guess."""
+    return [
+        [BEST_TARGETED_OPENER, b"coign", b"flood", b"fjord"],
+        [BEST_TARGETED_OPENER, b"mincy", b"cabin"],
+        [BEST_TARGETED_OPENER, b"lokum", b"stone"],
+        [BEST_TARGETED_OPENER, b"zooid", b"frost"],
+        [BEST_TARGETED_OPENER, b"medal", None, b"bleak"],
+    ]
+
+
+@pytest.mark.parametrize(
+    ("engine_fixture", "history"),
+    [
+        *[("engine", h) for h in _get_histories()],
+        *[("targeted_engine", h) for h in _get_targeted_histories()],
+    ],
+)
+def test_simulate(
+    request: pytest.FixtureRequest, engine_fixture: str, history: list[bytes | None]
+) -> None:
     """Simulate engine games and validate history."""
+    engine = request.getfixturevalue(engine_fixture)
     solution = history[-1]
     assert solution, "Final word cannot be None."
     game = engine.simulate(solution)

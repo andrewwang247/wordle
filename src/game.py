@@ -21,14 +21,13 @@ class Game:
     """Basic framework for playing Wordle."""
 
     def __init__(
-        self,
-        words: ByteArr,
-        patterns: ByteGrid,
+        self, words: ByteArr, patterns: ByteGrid, targets: ByteArr | None = None
     ) -> None:
         """Initialize game with references to immutable data and a solution."""
         # Fast way to index given a word.
         self.index = pd.Index(words)  # (n,)
         self.patterns = patterns
+        self.targets = targets
 
         # Null initialize parameters after we have a solution set
         self.solution: bytes | None = None
@@ -38,11 +37,13 @@ class Game:
 
     def set_solution(self, solution: bytes | None = None) -> None:
         """Initialize game with a given (or random) solution."""
+        container = self.index if self.targets is None else self.targets
+        cname = "dictionary" if self.targets is None else "targets"
         if solution:
-            assert solution in self.index, f"{solution.decode()} is not in dictionary."
+            assert solution in container, f"{solution.decode()} is not in {cname}."
             self.solution = solution
         else:
-            self.solution = _RNG.choice(self.index)
+            self.solution = _RNG.choice(container)
 
         self.guess_hist = []
         solution_index = self.index.get_loc(self.solution)

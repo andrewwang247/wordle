@@ -47,7 +47,7 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
     "-t",
     is_flag=True,
     default=False,
-    help="Use known targets sub-list to prime engine.",
+    help="Whether solution is in known targets sub-list.",
 )
 @option(
     "--verbose",
@@ -61,9 +61,10 @@ def main(infolen: int, *, targeted: bool, verbose: bool) -> None:
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
     words = load_words()
     patterns = load_patterns()
-    game = Game(words, patterns)
+    targets = load_targets() if targeted else None
+    game = Game(words, patterns, targets)
     ranker = Ranker(words, patterns)
-    engine = Engine(words, ranker, load_targets() if targeted else None)
+    engine = Engine(words, ranker, targets)
 
     if infolen > 0:
         log_initial_assistance(infolen, targeted=targeted)

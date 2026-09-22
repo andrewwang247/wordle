@@ -7,13 +7,28 @@ from math import log2
 
 import pytest
 
-from src import ByteArr, ByteGrid, Engine, Game, Ranker, load_patterns, load_words
+from src import (
+    ByteArr,
+    ByteGrid,
+    Engine,
+    Game,
+    Ranker,
+    load_patterns,
+    load_targets,
+    load_words,
+)
 
 
 @pytest.fixture(scope="session")
 def words() -> ByteArr:
     """Provide singleton word list."""
     return load_words()
+
+
+@pytest.fixture(scope="session")
+def targets() -> ByteArr:
+    """Provide singleton target patterns."""
+    return load_targets()
 
 
 @pytest.fixture(scope="session")
@@ -45,3 +60,9 @@ def ranker(words: ByteArr, patterns: ByteGrid) -> Ranker:
 def engine(words: ByteArr, ranker: Ranker) -> Engine:
     """Create new engine for each test."""
     return Engine(words, ranker)
+
+
+@pytest.fixture
+def targeted_engine(words: ByteArr, ranker: Ranker, targets: ByteArr) -> Engine:
+    """Create new targeted engine for each test."""
+    return Engine(words, ranker, targets)

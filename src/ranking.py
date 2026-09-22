@@ -76,7 +76,8 @@ class Ranker:
         return self.words[sorted_idx], entropies[sorted_idx]
 
     def manual_prune(self, targets: ByteArr) -> None:
-        """Mark all targets as not reachable."""
+        """Mark all non-targets as not reachable."""
+        assert np.all(np.isin(targets, self.words)), "Targets must be subset of words"
         logger.info("Marking all target as unreachable")
         mask = np.isin(self.words, targets)
         self.reachable[~mask] = False

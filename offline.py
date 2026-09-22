@@ -7,7 +7,15 @@ import logging
 
 from click import IntRange, command, option
 
-from src import Engine, Game, Ranker, load_patterns, load_words, log_initial_assistance
+from src import (
+    Engine,
+    Game,
+    Ranker,
+    load_patterns,
+    load_targets,
+    load_words,
+    log_initial_assistance,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,24 +51,32 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
     help="Max # of suggestions to log per round. 0 is no assistance.",
 )
 @option(
+    "--targeted",
+    "-t",
+    is_flag=True,
+    default=False,
+    help="Whether solution is in known targets sub-list.",
+)
+@option(
     "--verbose",
     "-v",
     is_flag=True,
     default=False,
     help="Displays application logs if set.",
 )
-def main(solution: str | None, infolen: int, *, verbose: bool) -> None:
+def main(solution: str | None, infolen: int, *, targeted: bool, verbose: bool) -> None:
     """Play Wordle with a provided or random solution."""
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
     words = load_words()
     patterns = load_patterns()
-    game = Game(words, patterns)
+    targets = load_targets() if targeted else None
+    game = Game(words, patterns, targets)
     ranker = Ranker(words, patterns)
-    engine = Engine(words, ranker)
+    engine = Engine(words, ranker, targets)
     game.set_solution(solution.encode("ascii") if solution else None)
 
     if infolen > 0:
-        log_initial_assistance(infolen, targeted=False)
+        log_initial_assistance(infolen, targeted=targeted)
     while not play_one_round(game, engine, infolen):
         pass
 

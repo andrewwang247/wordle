@@ -4,7 +4,7 @@ Copyright 2026. Andrew Wang.
 """
 
 import logging
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -18,7 +18,7 @@ type ByteGrid = np.ndarray[tuple[int, int], np.dtype[np.bytes_]]
 logger = logging.getLogger(__name__)
 
 
-class Square(Enum):
+class Square(StrEnum):
     """Define square colors and their unicode representation."""
 
     BLACK = "\U00002b1b"
@@ -26,20 +26,12 @@ class Square(Enum):
     GREEN = "\U0001f7e9"
 
 
+_SQUARE_MAP = {ord("b"): Square.BLACK, ord("y"): Square.YELLOW, ord("g"): Square.GREEN}
+
+
 def convert_squares(squares: bytes) -> str:
     """Convert convenience string of b, y, and g into squares."""
-    values = []
-    for sq in squares:
-        assert sq in {ord("g"), ord("y"), ord("b")}, (
-            f"Unrecognized character {sq} in squares"
-        )
-        if sq == ord("b"):
-            values.append(Square.BLACK.value)
-        elif sq == ord("y"):
-            values.append(Square.YELLOW.value)
-        else:
-            values.append(Square.GREEN.value)
-    return "".join(values)
+    return "".join(_SQUARE_MAP[sq] for sq in squares)
 
 
 def wordle_compare(guess: bytes, answer: bytes, pbar: tqdm[Any] | None = None) -> bytes:
