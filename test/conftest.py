@@ -46,6 +46,14 @@ def game(words: ByteArr, patterns: ByteGrid) -> Game:
 
 
 @pytest.fixture
+def targeted_game(words: ByteArr, patterns: ByteGrid, targets: ByteArr) -> Game:
+    """Create starting targeted game for all tests."""
+    game = Game(words, patterns, targets)
+    assert game.current_round() == 0
+    return game
+
+
+@pytest.fixture
 def ranker(words: ByteArr, patterns: ByteGrid) -> Ranker:
     """Create new ranker for all test."""
     ranker = Ranker(words, patterns)

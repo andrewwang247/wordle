@@ -101,7 +101,6 @@ class Engine:
             assert solution in self.targets, (
                 f"{solution.decode()} is not in provided targets sub-list"
             )
-            self.ranker.manual_prune(self.targets)
         while True:
             guess = self._make_guess(game.current_round())
             squares, is_win = game.guess_is_win(guess)
@@ -114,6 +113,8 @@ class Engine:
         """Reset the internal state for a new game."""
         logger.info("Resetting engine state")
         self.ranker.reset()
+        if self.targets is not None:
+            self.ranker.manual_prune(self.targets)
         # Initial item in reachable and uncertainty history remains constant
         del self.reachable_hist[1:]
         del self.uncertainty_hist[1:]

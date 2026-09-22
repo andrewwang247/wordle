@@ -3,12 +3,9 @@
 Copyright 2026. Andrew Wang.
 """
 
-from typing import TYPE_CHECKING
-
 import pytest
 
-if TYPE_CHECKING:
-    from src import Game
+from src import Game
 
 
 def test_invalid(game: Game) -> None:
@@ -22,8 +19,11 @@ def test_invalid(game: Game) -> None:
         game.guess_is_win(b"ghi")
 
 
-def test_online(game: Game) -> None:
+@pytest.mark.parametrize(("game_fixture"), ["game", "targeted_game"])
+def test_online(request: pytest.FixtureRequest, game_fixture: str) -> None:
     """Test online game with provided squares."""
+    game = request.getfixturevalue(game_fixture)
+    assert isinstance(game, Game)
     guesses = [b"reefs", b"crest", b"beach", b"coast"]
     squares = [b"bbgbb", b"ybgbb", b"byyyb", b"yyybb"]
     for rnd, (gs, sq) in enumerate(zip(guesses, squares, strict=True), start=1):
@@ -34,8 +34,11 @@ def test_online(game: Game) -> None:
     assert game.current_round() == len(guesses) + 1
 
 
-def test_offline(game: Game) -> None:
+@pytest.mark.parametrize(("game_fixture"), ["game", "targeted_game"])
+def test_offline(request: pytest.FixtureRequest, game_fixture: str) -> None:
     """Test offline game with generated squares."""
+    game = request.getfixturevalue(game_fixture)
+    assert isinstance(game, Game)
     game.set_solution(b"fungi")
     guesses = [b"fauna", b"ferns", b"pines", b"woods"]
     squares = [b"gbyyb", b"gbbyb", b"bygbb", b"bbbbb"]

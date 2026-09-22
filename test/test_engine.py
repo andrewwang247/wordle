@@ -5,7 +5,7 @@ Copyright 2026. Andrew Wang.
 
 import pytest
 
-from src import BEST_OPENER, BEST_TARGETED_OPENER
+from src import BEST_OPENER, BEST_TARGETED_OPENER, Engine
 
 
 def _get_histories() -> list[list[bytes | None]]:
@@ -42,6 +42,7 @@ def test_simulate(
 ) -> None:
     """Simulate engine games and validate history."""
     engine = request.getfixturevalue(engine_fixture)
+    assert isinstance(engine, Engine)
     solution = history[-1]
     assert solution, "Final word cannot be None."
     game = engine.simulate(solution)
