@@ -29,7 +29,7 @@ class wordle {
 
   /**
    * @brief Generate the Wordle square pattern for a round.
-   * @pre Parameters must both have same length.
+   * @pre guess and answer must share the same length.
    * @param guess The word that was guessed.
    * @param answer The puzzle solution.
    * @return A string of color indicators corresponding to squares.

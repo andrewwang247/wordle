@@ -27,7 +27,8 @@ string wordle::compare(string_view guess, string_view answer) const noexcept {
     if (guess[i] == answer[i]) {
       squares[i] = GREEN;
     } else {
-      ++yellow_counts[static_cast<unsigned char>(answer[i])];
+      const auto ans_idx = static_cast<unsigned char>(answer[i]);
+      ++yellow_counts[ans_idx];
     }
   }
 
@@ -36,10 +37,10 @@ string wordle::compare(string_view guess, string_view answer) const noexcept {
   for (auto i = 0U; i != m_word_len; ++i) {
     if (squares[i] == GREEN) continue;
 
-    const auto idx = static_cast<unsigned char>(guess[i]);
-    if (yellow_counts[idx] > 0) {
+    const auto gs_idx = static_cast<unsigned char>(guess[i]);
+    if (yellow_counts[gs_idx] > 0) {
       squares[i] = YELLOW;
-      --yellow_counts[idx];
+      --yellow_counts[gs_idx];
     }
   }
 

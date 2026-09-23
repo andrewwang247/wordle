@@ -7,6 +7,7 @@ Copyright 2026. Andrew Wang
 #include <stdexcept>
 #include <string_view>
 
+#include "bar.h"
 #include "dictionary.h"
 #include "numpy.h"
 #include "wordle.h"
@@ -21,17 +22,19 @@ int main(int argc, char* argv[]) {
   }
 
   const auto words = dictionary::load(argv[1]);
-  const auto len = dictionary::uniform_length(words);
-
-  const auto patterns = wordle{len};
+  const auto word_len = dictionary::uniform_length(words);
+  const auto dictionary_len = words.size();
 
   ofstream fout{argv[2]};
-  numpy::write_header(fout, len, words.size());
+  numpy::write_header(fout, word_len, dictionary_len);
 
+  const wordle patterns{word_len};
+  progress_bar pbar{dictionary_len * dictionary_len};
   for (const string_view guess : words) {
     for (const string_view answer : words) {
       const auto squares = patterns.compare(guess, answer);
-      fout.write(squares.data(), static_cast<int>(len));
+      fout.write(squares.data(), static_cast<int>(word_len));
+      pbar.increment();
     }
   }
 }

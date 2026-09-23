@@ -54,10 +54,10 @@ def load_targets() -> ByteArr:
 def load_patterns() -> ByteGrid:
     """Load compiled patterns (n, n) from archive or generate if non-existent."""
     if not _PATTERN_CACHE.exists():
-        logger.info("No pattern cache %s found", _PATTERN_CACHE)
+        print("Building pattern cache...")
         build_patterns_native(_DICTIONARY, _PATTERN_CACHE)
     assert _PATTERN_CACHE.exists(), "Finished compilation but no cache file found"
-    logger.info("Loading pre-compiled cache %s", _PATTERN_CACHE)
+    logger.info("Loading pattern cache %s", _PATTERN_CACHE)
     return cast("ByteGrid", np.load(_PATTERN_CACHE))
 
 
