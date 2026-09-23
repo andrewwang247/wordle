@@ -25,7 +25,7 @@ def _get_targeted_histories() -> list[list[bytes | None]]:
         [BEST_TARGETED_OPENER, b"coign", b"flood", b"fjord"],
         [BEST_TARGETED_OPENER, b"mincy", b"cabin"],
         [BEST_TARGETED_OPENER, b"lokum", b"stone"],
-        [BEST_TARGETED_OPENER, b"zooid", b"frost"],
+        [BEST_TARGETED_OPENER, None, b"frost"],
         [BEST_TARGETED_OPENER, b"medal", None, b"bleak"],
     ]
 
