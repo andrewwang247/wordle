@@ -15,4 +15,5 @@ from .engine import BEST_OPENER as BEST_OPENER
 from .engine import BEST_TARGETED_OPENER as BEST_TARGETED_OPENER
 from .engine import Engine as Engine
 from .game import Game as Game
+from .initialize import setup_environment as setup_environment
 from .ranking import Ranker as Ranker

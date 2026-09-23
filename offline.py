@@ -7,15 +7,7 @@ import logging
 
 from click import IntRange, command, option
 
-from src import (
-    Engine,
-    Game,
-    Ranker,
-    load_patterns,
-    load_targets,
-    load_words,
-    log_initial_assistance,
-)
+from src import Engine, Game, log_initial_assistance, setup_environment
 
 logger = logging.getLogger(__name__)
 
@@ -67,12 +59,7 @@ def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
 def main(solution: str | None, infolen: int, *, targeted: bool, verbose: bool) -> None:
     """Play Wordle with a provided or random solution."""
     logging.basicConfig(level=logging.INFO if verbose else logging.WARNING)
-    words = load_words()
-    patterns = load_patterns()
-    targets = load_targets() if targeted else None
-    game = Game(words, patterns, targets)
-    ranker = Ranker(words, patterns)
-    engine = Engine(words, ranker, targets)
+    game, engine = setup_environment(targeted=targeted)
     game.set_solution(solution.encode("ascii") if solution else None)
 
     if infolen > 0:
