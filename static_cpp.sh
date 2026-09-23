@@ -24,7 +24,7 @@ cppcheck --language=c++ --std=c++23 --quiet \
 
 if [[ ! -f "compile_commands.json" ]]; then
     printf "Generating compile commands...\n"
-    bear -- make clean release
+    bear -- make clean release -j
 fi
 run-clang-tidy -quiet
 
