@@ -173,48 +173,13 @@ Where possible, I've attempted to make use of vectorized numpy operations to red
 Two operations that come up again and again are:
 
 1. Given a guess and a known solution, produce the square pattern, e.g. (`fjord`, `foods`) : 🟩⬛🟩⬛🟨
-2. Given a guess and a square pattern, determine if a possibility is compatible, e.g. (`fjords`, 🟩⬛🟩⬛🟨) is compatible with `foody`.
+2. Given a guess and a square pattern, determine if a solution is compatible, e.g. (`fjords`, 🟩⬛🟩⬛🟨) is compatible with `foody`.
 
 Producing square patterns follows a procedure that is difficult to vectorize in numpy. If you're interested, see `wordle_compare` in `src/constants.py`. Since our dictionary is known ahead of time, we should not repeatedly compute these values at runtime. Instead, cache a square matrix *C* of dimension |*W*| where `C[i, j]` is the square pattern when guessing $w_i$ with solution $w_j$. This immediately solves the first operation with a simple index lookup. We can use it to solve the second operation by masking where the row `C[i, :]` is equal to the square pattern, i.e. `w[C[i, :] == s]` returns all compatibilities.
 
-### Archival
-
-The pattern matrix is cached and archived at 2 levels.
-
-1. Fast access stored in an uncompressed `.npy` binary file that is generated on access. Used by default and takes up a lot of space.
-2. Github storage in a compressed `.npz` zipped archive that is split across partitions in `archive` to work around the large file size cap.
-
-```text
-$ du -h resources/patterns.np*
-1.1G   resources/patterns.npy
-127M   resources/patterns.npz
-
-$ du -h archive/*
-22M   archive/part_00
-22M   archive/part_01
-22M   archive/part_02
-22M   archive/part_03
-22M   archive/part_04
-22M   archive/part_05
-```
-
-You can manually create the `.npz` archive from the partitions by running
-
-```shell
-cat archive/* > resources/patterns.npz
-```
-
-Using an existing `.npz` archive, you can manually create the partitions by running
-
-```shell
-split -d -n {n_parts} resources/patterns.npz archive/part_
-```
-
-for an appropriate `n_parts` such that each partition is sufficiently small.
-
 ### Generating Patterns
 
-The pattern cache must be re-built every time the dictionary is changed, i.e. `resources/words.txt`. There are 2 options for this pre-compilation step in `src/cache.py`. Both construct a `.npy` cache file and offer an optional `.npz` compression.
+The pattern cache must be re-built every time the dictionary is changed, i.e. `resources/words.txt`. There are 2 options for this pre-compilation step in `src/cache.py`. Both construct a `resources/patterns.npy` cache file.
 
 1. `build_patterns_py` is implemented in pure Python. This option has no external dependencies. However, it can take significantly longer for large dictionaries compared to the native option.
 2. `build_patterns_native` is implemented in optimized C++. Python delegates the work to the native binary. This option requires a compiler toolchain. However, it's blazing fast even for large dictionaries.
@@ -222,7 +187,7 @@ The pattern cache must be re-built every time the dictionary is changed, i.e. `r
 The source files for `build_patterns_native` are stored in the `native` directory and can be compiled with the included `Makefile`. Run the binary as a stand-alone program with:
 
 ```shell
-./build/patterns resources/words.txt resources/patterns.npy
+./build/patterns input_path.txt output_path.npy
 ```
 
 ### Generating Recommendations
