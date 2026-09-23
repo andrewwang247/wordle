@@ -85,7 +85,7 @@ class Engine:
         gs_df = pd.DataFrame(
             data=np.round(entrops, 3),
             index=guesses.astype(np.str_),
-            columns=["entropy"],
+            columns=["entropy" if self.targets is None else "entropy_targeted"],
         )
         print("Informative guesses")
         print(gs_df[:infolen])
