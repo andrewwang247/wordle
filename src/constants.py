@@ -4,6 +4,7 @@ Copyright 2026. Andrew Wang.
 """
 
 import logging
+from collections import Counter
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
@@ -40,31 +41,25 @@ def wordle_compare(guess: bytes, answer: bytes, pbar: tqdm[Any] | None = None) -
     This runs in a very tight loop during cache generation.
     """
     squares = bytearray(b"b" * len(guess))
+    yellow_counts: Counter[int] = Counter()
 
     # Mark green squares by position matching.
-    # Also validates len(guess) == len(answer)
-    for i, (g, a) in enumerate(zip(guess, answer, strict=True)):
-        if g == a:
+    # Also validates len(guess) == len(answer).
+    # Count frequency of non-green characters in answer.
+    for i, (guess_letter, ans_letter) in enumerate(zip(guess, answer, strict=True)):
+        if guess_letter == ans_letter:
             squares[i] = ord(b"g")
+        else:
+            yellow_counts[ans_letter] += 1
 
     # Iterate over non-green letters in guess.
+    # Mark up to yellow_counts guess positions yellow.
     for i, letter in enumerate(guess):
         if squares[i] == ord(b"g"):
             continue
-        # Count non-green appearances of letter in answer.
-        max_yellow = sum(
-            1
-            for an, sq in zip(answer, squares, strict=True)
-            if sq != ord(b"g") and an == letter
-        )
-        # Color up to max_yellow squares where guess matches letter.
-        num_yellow = 0
-        for j, gs in enumerate(guess):
-            if num_yellow == max_yellow:
-                break
-            if gs == letter and squares[j] != ord(b"g"):
-                squares[j] = ord(b"y")
-                num_yellow += 1
+        if yellow_counts[letter] > 0:
+            squares[i] = ord(b"y")
+            yellow_counts[letter] -= 1
 
     if pbar:
         pbar.update(1)
