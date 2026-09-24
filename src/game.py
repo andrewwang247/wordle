@@ -45,7 +45,6 @@ class Game:
         else:
             self.solution = _RNG.choice(container)
 
-        self.guess_hist = []
         solution_index = self.index.get_loc(self.solution)
         assert isinstance(solution_index, int), (
             f"Unexpected type {type(solution_index)} from pandas index"
@@ -70,17 +69,13 @@ class Game:
         self.square_hist.append(squares)
         round_number = self.current_round()
         print(f"Round {round_number}: {word.decode()} {convert_squares(squares)}")
-        is_win = all(sq == ord("g") for sq in squares)
-        if not is_win:
-            return False
-        if self.solution:
-            assert word == self.solution, (
-                f"Word {word.decode()} does not match {self.solution.decode()}."
-            )
-        else:
-            self.solution = word
-        print(f"Completed game in {round_number} rounds")
-        return True
+        if is_win := all(sq == ord("g") for sq in squares):
+            if sol := self.solution:
+                assert word == sol, f"{word.decode()} does not match {sol.decode()}."
+            else:
+                self.solution = word
+            print(f"Completed game in {round_number} rounds")
+        return is_win
 
     def guess_is_win(self, word: bytes) -> tuple[bytes, bool]:
         """Process a guess and return the square combo + win state."""
@@ -88,5 +83,4 @@ class Game:
         assert word in self.index, f"{word.decode()} is not in dictionary."
         gs_idx = self.index.get_loc(word)
         result = cast("bytes", self.patterns[gs_idx, self.sol_idx])
-        is_win = self.append_is_win(word, result)
-        return result, is_win
+        return result, self.append_is_win(word, result)

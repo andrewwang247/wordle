@@ -101,12 +101,12 @@ class Engine:
             assert solution in self.targets, (
                 f"{solution.decode()} is not in provided targets sub-list"
             )
-        while True:
+        is_win = False
+        while not is_win:
             guess = self._make_guess(game.current_round())
             squares, is_win = game.guess_is_win(guess)
-            if is_win:
-                break
-            self.feedback(guess, squares)
+            if not is_win:
+                self.feedback(guess, squares)
         return game
 
     def reset(self) -> None:
@@ -130,13 +130,12 @@ class Engine:
         if round_num == 0:
             logger.info("Using cached opener to speed things up.")
             return self.cached_opener
-        remaining = np.sum(self.ranker.reachable)
-        if remaining <= _STRATEGY_PHASE_SWITCH:
+        next_guesses: pd.Index | ByteArr | None = None
+        if np.sum(self.ranker.reachable) <= _STRATEGY_PHASE_SWITCH:
             logger.info("Reached endgame. Choosing likely solution to win.")
-            solutions = self._likely_solutions()
-            assert solutions.size > 0, "Could not find likely solutions."
-            return cast("bytes", solutions.index[0])
-        logger.info("Choosing highest entropy guess to prune state space.")
-        guesses = self.ranker.informative_guesses()[0]
-        assert guesses.size > 0, "Could not find informative guesses."
-        return cast("bytes", guesses[0])
+            next_guesses = self._likely_solutions().index
+        else:
+            logger.info("Choosing highest entropy guess to prune state space.")
+            next_guesses, _ = self.ranker.informative_guesses()
+        assert next_guesses.size > 0, "Could not determine next guess."
+        return cast("bytes", next_guesses[0])
