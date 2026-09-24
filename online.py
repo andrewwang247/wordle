@@ -59,9 +59,9 @@ def main(infolen: int, *, targeted: bool, verbose: bool) -> None:
     while not play_one_round(game, engine, infolen):
         pass
 
-    assert game.solution, "Game solution should be defined"
+    game.reset()
     engine.reset()
-    engine.simulate(game.solution)
+    engine.simulate(game)
 
 
 if __name__ == "__main__":

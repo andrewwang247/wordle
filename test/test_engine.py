@@ -5,7 +5,7 @@ Copyright 2026. Andrew Wang.
 
 import pytest
 
-from src import BEST_OPENER, BEST_TARGETED_OPENER, Engine
+from src import BEST_OPENER, BEST_TARGETED_OPENER, Engine, Game
 
 
 def _get_histories() -> list[list[bytes | None]]:
@@ -31,21 +31,27 @@ def _get_targeted_histories() -> list[list[bytes | None]]:
 
 
 @pytest.mark.parametrize(
-    ("engine_fixture", "history"),
+    ("engine_fixture", "game_fixture", "history"),
     [
-        *[("engine", h) for h in _get_histories()],
-        *[("targeted_engine", h) for h in _get_targeted_histories()],
+        *[("engine", "game", h) for h in _get_histories()],
+        *[("targeted_engine", "targeted_game", h) for h in _get_targeted_histories()],
     ],
 )
 def test_simulate(
-    request: pytest.FixtureRequest, engine_fixture: str, history: list[bytes | None]
+    request: pytest.FixtureRequest,
+    engine_fixture: str,
+    game_fixture: str,
+    history: list[bytes | None],
 ) -> None:
     """Simulate engine games and validate history."""
     engine = request.getfixturevalue(engine_fixture)
+    game = request.getfixturevalue(game_fixture)
     assert isinstance(engine, Engine)
+    assert isinstance(game, Game)
     solution = history[-1]
-    assert solution, "Final word cannot be None."
-    game = engine.simulate(solution)
+    game.set_solution(solution)
+
+    engine.simulate(game)
     for guessed, expected in zip(game.guess_hist, history, strict=True):
         if not expected:
             continue

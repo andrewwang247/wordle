@@ -11,10 +11,9 @@ import numpy as np
 import pandas as pd
 from wordfreq import zipf_frequency
 
-from .game import Game
-
 if TYPE_CHECKING:
     from .constants import ByteArr
+    from .game import Game
     from .ranking import Ranker
 
 logger = logging.getLogger(__name__)
@@ -90,13 +89,13 @@ class Engine:
         print("Informative guesses")
         print(gs_df[:infolen])
 
-    def simulate(self, solution: bytes) -> Game:
+    def simulate(self, game: Game) -> None:
         """Simulate playing with defined solution. Return constructed game."""
+        solution = game.solution
+        assert solution, "Game does not have a set solution"
         announcement = "Simulating engine game with solution"
         print("=" * (len(announcement) + 1 + len(solution)))
         print(f"{announcement} {solution.decode()}")
-        game = Game(self.words, self.ranker.patterns, self.targets)
-        game.set_solution(solution)
         if self.targets is not None:
             assert solution in self.targets, (
                 f"{solution.decode()} is not in provided targets sub-list"
@@ -107,7 +106,6 @@ class Engine:
             squares, is_win = game.guess_is_win(guess)
             if not is_win:
                 self.feedback(guess, squares)
-        return game
 
     def reset(self) -> None:
         """Reset the internal state for a new game."""

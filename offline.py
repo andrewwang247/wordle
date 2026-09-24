@@ -15,12 +15,11 @@ logger = logging.getLogger(__name__)
 def play_one_round(game: Game, engine: Engine, infolen: int) -> bool:
     """Play a single round. Returns whether player won."""
     try:
-        user_guess = input("\nGuess: ")
-        user_bytes = user_guess.encode("ascii")
-        squares, is_win = game.guess_is_win(user_bytes)
+        guess = input("\nGuess: ").encode("ascii")
+        squares, is_win = game.guess_is_win(guess)
         if is_win:
             return True
-        engine.feedback(user_bytes, squares)
+        engine.feedback(guess, squares)
         engine.log_assistance(infolen)
     except (AssertionError, UnicodeEncodeError) as err:
         logger.warning(err)
@@ -67,9 +66,9 @@ def main(solution: str | None, infolen: int, *, targeted: bool, verbose: bool) -
     while not play_one_round(game, engine, infolen):
         pass
 
-    assert game.solution, "Game solution should be defined"
+    game.reset()
     engine.reset()
-    engine.simulate(game.solution)
+    engine.simulate(game)
 
 
 if __name__ == "__main__":

@@ -9,11 +9,10 @@ from typing import cast
 import numpy as np
 import pandas as pd
 
-from .constants import ByteArr, ByteGrid, Square, convert_squares
+from .constants import ByteArr, ByteGrid, convert_squares
 
 logger = logging.getLogger(__name__)
 
-_SQUARE_VALUES = [item.value for item in Square]
 _RNG = np.random.default_rng()
 
 
@@ -56,6 +55,11 @@ class Game:
         """Return the current round number."""
         return len(self.guess_hist)
 
+    def reset(self) -> None:
+        """Reset game history. Retain solution if set."""
+        self.guess_hist.clear()
+        self.square_hist.clear()
+
     def append_is_win(self, word: bytes, squares: bytes) -> bool:
         """Process a guess and response. Return if this is a win."""
         assert word in self.index, f"{word.decode()} is not in dictionary."
@@ -73,7 +77,7 @@ class Game:
             if sol := self.solution:
                 assert word == sol, f"{word.decode()} does not match {sol.decode()}."
             else:
-                self.solution = word
+                self.set_solution(word)
             print(f"Completed game in {round_number} rounds")
         return is_win
 
