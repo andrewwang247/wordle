@@ -9,6 +9,8 @@ Copyright 2026. Andrew Wang.
 #include <string>
 #include <string_view>
 
+namespace wd {
+
 /**
  * @brief Compute square patterns given guess and answer.
  */
@@ -37,3 +39,5 @@ class wordle {
   std::string compare(std::string_view guess,
                       std::string_view answer) const noexcept;
 };
+
+}  // namespace wd

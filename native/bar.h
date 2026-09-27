@@ -6,6 +6,8 @@ Copyright 2026. Andrew Wang.
 #pragma once
 #include <cstddef>
 
+namespace wd {
+
 /**
  * @brief Fixed width ASCII progress bar.
  */
@@ -49,3 +51,5 @@ class progress_bar {
    */
   void display(bool new_ln) const;
 };
+
+}  // namespace wd

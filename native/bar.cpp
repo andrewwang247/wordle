@@ -16,6 +16,8 @@ using std::println;
 using std::size_t;
 using std::string;
 
+namespace wd {
+
 progress_bar::progress_bar(size_t total) noexcept
     : m_outer_total(total), m_inner_total(total / BAR_WIDTH) {}
 
@@ -41,3 +43,5 @@ void progress_bar::display(bool new_ln) const {
   }
   fflush(stdout);
 }
+
+}  // namespace wd

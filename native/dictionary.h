@@ -13,7 +13,7 @@ Copyright 2026. Andrew Wang.
 /**
  * @brief Read and validate dictionary words.
  */
-namespace dictionary {
+namespace wd::dictionary {
 
 /**
  * @brief Read words line by line from a file.
@@ -30,4 +30,4 @@ std::vector<std::string> load(std::string_view fname);
  */
 std::size_t uniform_length(std::span<const std::string> words);
 
-}  // namespace dictionary
+}  // namespace wd::dictionary

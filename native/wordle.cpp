@@ -15,6 +15,8 @@ using std::size_t;
 using std::string;
 using std::string_view;
 
+namespace wd {
+
 wordle::wordle(size_t len) noexcept : m_word_len(len) {}
 
 string wordle::compare(string_view guess, string_view answer) const noexcept {
@@ -46,3 +48,5 @@ string wordle::compare(string_view guess, string_view answer) const noexcept {
 
   return squares;
 }
+
+}  // namespace wd

@@ -21,15 +21,15 @@ int main(int argc, char* argv[]) {
     throw invalid_argument("Args: input_path.txt output_path.npy");
   }
 
-  const auto words = dictionary::load(argv[1]);
-  const auto word_len = dictionary::uniform_length(words);
+  const auto words = wd::dictionary::load(argv[1]);
+  const auto word_len = wd::dictionary::uniform_length(words);
   const auto dictionary_len = words.size();
 
   ofstream fout{argv[2]};
-  numpy::write_header(fout, word_len, dictionary_len);
+  wd::numpy::write_header(fout, word_len, dictionary_len);
 
-  const wordle patterns{word_len};
-  progress_bar pbar{dictionary_len * dictionary_len};
+  const wd::wordle patterns{word_len};
+  wd::progress_bar pbar{dictionary_len * dictionary_len};
   for (const string_view guess : words) {
     for (const string_view answer : words) {
       const auto squares = patterns.compare(guess, answer);

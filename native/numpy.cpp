@@ -21,6 +21,8 @@ using std::ofstream;
 using std::size_t;
 using std::uint16_t;
 
+namespace wd {
+
 void numpy::write_header(ofstream& fout, size_t nbytes, size_t dim) {
   // Header dictionary data.
   const auto header_data = format(HEADER_TEMPLATE, nbytes, dim, dim);
@@ -46,3 +48,5 @@ void numpy::write_header(ofstream& fout, size_t nbytes, size_t dim) {
   for (auto i = 0U; i != padding - 1; ++i) fout.put('\x20');
   fout.put('\n');
 }
+
+}  // namespace wd

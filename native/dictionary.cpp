@@ -24,6 +24,8 @@ using std::vector;
 
 namespace ranges = std::ranges;
 
+namespace wd {
+
 vector<string> dictionary::load(string_view fname) {
   ifstream fin{fname.data()};
   vector<string> words;
@@ -46,3 +48,5 @@ size_t dictionary::uniform_length(span<const string> words) {
   }
   return first_len;
 }
+
+}  // namespace wd

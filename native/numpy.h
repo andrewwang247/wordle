@@ -11,7 +11,7 @@ Copyright 2026. Andrew Wang.
 /**
  * @brief Interface with Numpy binary format.
  */
-namespace numpy {
+namespace wd::numpy {
 using std::string_view_literals::operator""sv;
 
 static constexpr auto PAD_ALIGN = 64;
@@ -29,4 +29,4 @@ static constexpr auto HEADER_TEMPLATE =
  */
 void write_header(std::ofstream& fout, std::size_t nbytes, std::size_t dim);
 
-}  // namespace numpy
+}  // namespace wd::numpy
