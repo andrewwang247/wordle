@@ -50,7 +50,7 @@ The engine helps the user by providing 2 sorted tables at each round.
 
 As an example, consider the first round of a game where you open with `hello` and the solution is `world`. You can expect to see:
 
-```text
+```console
 $ python3 offline.py -s world -l 4
 Remaining possibilities: 14855 words
 Remaining uncertainty: 13.86 bits
