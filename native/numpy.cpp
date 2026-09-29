@@ -29,11 +29,16 @@ void numpy::write_header(ofstream& fout, size_t nbytes, size_t dim) {
   const auto data_len = header_data.size();
 
   uint16_t specifier{};
+  array<char, PAD_ALIGN> pad_buffer{};
+  pad_buffer.fill('\x20');
+
   // magic + version + len specifier + dictionary
   const auto current_bytes =
       MAGIC_VERSION.size() + sizeof(specifier) + data_len;
   // Get padding needed to reach next multiple of PAD_ALIGN.
   const auto padding = PAD_ALIGN - (current_bytes % PAD_ALIGN);
+  // By construction, padding > 0
+  pad_buffer[padding - 1] = '\n';
 
   specifier = static_cast<uint16_t>(data_len + padding);
   if constexpr (endian::native == endian::big) {
@@ -44,9 +49,7 @@ void numpy::write_header(ofstream& fout, size_t nbytes, size_t dim) {
   fout.write(MAGIC_VERSION.data(), MAGIC_VERSION.size());
   fout.write(spec_bytes.data(), sizeof(specifier));
   fout.write(header_data.data(), static_cast<int>(data_len));
-  // By construction, padding > 0
-  for (auto i = 0U; i != padding - 1; ++i) fout.put('\x20');
-  fout.put('\n');
+  fout.write(pad_buffer.data(), static_cast<int>(padding));
 }
 
 }  // namespace wd

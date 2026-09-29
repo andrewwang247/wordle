@@ -25,7 +25,7 @@ string wordle::compare(string_view guess, string_view answer) const noexcept {
 
   // Mark green squares by position matching.
   // Count frequency of non-green characters in answer.
-  for (auto i = 0U; i != m_word_len; ++i) {
+  for (auto i = 0U; i < m_word_len; ++i) {
     if (guess[i] == answer[i]) {
       squares[i] = GREEN;
     } else {
@@ -36,7 +36,7 @@ string wordle::compare(string_view guess, string_view answer) const noexcept {
 
   // Iterate over non-green letters in guess.
   // Mark up to yellow_counts guess positions yellow.
-  for (auto i = 0U; i != m_word_len; ++i) {
+  for (auto i = 0U; i < m_word_len; ++i) {
     if (squares[i] == GREEN) continue;
 
     const auto gs_idx = static_cast<unsigned char>(guess[i]);

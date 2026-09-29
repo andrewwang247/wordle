@@ -54,7 +54,11 @@ def load_targets() -> ByteArr:
 def load_patterns() -> ByteGrid:
     """Load compiled patterns (n, n) from archive or generate if non-existent."""
     if not _PATTERN_CACHE.exists():
-        print("Building pattern cache...")
+        logger.warning(
+            "No pattern cache found at %s. Building from %s.",
+            _PATTERN_CACHE,
+            _DICTIONARY,
+        )
         build_patterns_native(_DICTIONARY, _PATTERN_CACHE)
     assert _PATTERN_CACHE.exists(), "Finished compilation but no cache file found"
     logger.info("Loading pattern cache %s", _PATTERN_CACHE)
@@ -101,7 +105,9 @@ def build_patterns_native(word_file: Path, pattern_file: Path) -> None:
     Save patterns to numpy cache and optional compressed archive.
     """
     if not _NATIVE_BINARY.exists():
-        logger.info("Binary %s not found. Building with Makefile.", _NATIVE_BINARY)
+        logger.warning(
+            "Executable %s not found. Building with Makefile.", _NATIVE_BINARY
+        )
         make_release = which("make")
         assert make_release, "Make is not installed on system."
         subprocess.run([make_release, "-j"], check=True, stdout=subprocess.DEVNULL)
