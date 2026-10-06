@@ -5,6 +5,7 @@ Copyright 2026. Andrew Wang.
 */
 #pragma once
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <string_view>
@@ -17,7 +18,7 @@ namespace wd {
 class wordle {
  private:
   static constexpr auto NUM_CHARS =
-      std::numeric_limits<unsigned char>::max() + 1;
+      std::numeric_limits<std::uint8_t>::max() + 1;
   static constexpr auto BLACK = 'b', GREEN = 'g', YELLOW = 'y';
 
   std::size_t m_word_len{};

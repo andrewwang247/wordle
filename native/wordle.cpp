@@ -7,6 +7,7 @@ Copyright 2026. Andrew Wang.
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <string_view>
 
@@ -14,6 +15,7 @@ using std::array;
 using std::size_t;
 using std::string;
 using std::string_view;
+using std::uint8_t;
 
 namespace wd {
 
@@ -29,7 +31,7 @@ string wordle::compare(string_view guess, string_view answer) const noexcept {
     if (guess[i] == answer[i]) {
       squares[i] = GREEN;
     } else {
-      const auto ans_idx = static_cast<unsigned char>(answer[i]);
+      const auto ans_idx = static_cast<uint8_t>(answer[i]);
       ++yellow_counts[ans_idx];
     }
   }
@@ -39,8 +41,8 @@ string wordle::compare(string_view guess, string_view answer) const noexcept {
   for (auto i = 0U; i < m_word_len; ++i) {
     if (squares[i] == GREEN) continue;
 
-    const auto gs_idx = static_cast<unsigned char>(guess[i]);
-    if (yellow_counts[gs_idx] > 0) {
+    if (const auto gs_idx = static_cast<uint8_t>(guess[i]);
+        yellow_counts[gs_idx] > 0) {
       squares[i] = YELLOW;
       --yellow_counts[gs_idx];
     }
