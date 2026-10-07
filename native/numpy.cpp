@@ -11,6 +11,7 @@ Copyright 2026. Andrew Wang.
 #include <cstdint>
 #include <format>
 #include <fstream>
+#include <string_view>
 
 using std::array;
 using std::bit_cast;
@@ -21,16 +22,24 @@ using std::ofstream;
 using std::size_t;
 using std::uint16_t;
 
+using std::string_view_literals::operator""sv;
+
 namespace wd {
 
 void numpy::write_header(ofstream& fout, size_t nbytes, size_t dim) {
+  static constexpr auto HEADER_TEMPLATE =
+      "{{'descr': '|S{}', 'fortran_order': False, 'shape': ({}, {}), }}";
+
   // Header dictionary data.
   const auto header_data = format(HEADER_TEMPLATE, nbytes, dim, dim);
   const auto data_len = header_data.size();
 
-  uint16_t specifier{};
+  static constexpr auto PAD_ALIGN = 64;
   array<char, PAD_ALIGN> pad_buffer{};
   pad_buffer.fill('\x20');
+
+  static constexpr auto MAGIC_VERSION = "\x93NUMPY\x01\x00"sv;
+  uint16_t specifier{};
 
   // magic + version + len specifier + dictionary
   const auto current_bytes =

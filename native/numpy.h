@@ -6,20 +6,11 @@ Copyright 2026. Andrew Wang.
 #pragma once
 #include <cstddef>
 #include <fstream>
-#include <string_view>
 
 /**
  * @brief Interface with Numpy binary format.
  */
 namespace wd::numpy {
-using std::string_view_literals::operator""sv;
-
-static constexpr auto PAD_ALIGN = 64;
-static constexpr auto MAGIC_VERSION = "\x93NUMPY\x01\x00"sv;
-// NOLINTBEGIN(whitespace/indent_namespace)
-static constexpr auto HEADER_TEMPLATE =
-    "{{'descr': '|S{}', 'fortran_order': False, 'shape': ({}, {}), }}";
-// NOLINTEND
 
 /**
  * @brief Write V1 numpy header with dtype bytes and shape (dim, dim).
